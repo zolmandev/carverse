@@ -47,6 +47,14 @@ class CarverseController extends Controller
     {
         abort_if(in_array($section, ['requests', 'passport', 'reminders']) && ! config('carverse.legacy_workflows'), 404);
 
+        if ($r->user()->role === 'admin') {
+            if ($section !== 'admin') {
+                return redirect('/app/admin');
+            }
+
+return app(SuperUserController::class)->index($r);
+        }
+
         return Inertia::render('carverse/workspace', app(WorkspaceQuery::class)->props($r, $section));
     }
 
@@ -362,12 +370,16 @@ class CarverseController extends Controller
         return back();
     }
 
-    public function community(Request $r)
+    public function community(Request $r, ?Community $community = null)
     {
         $this->allow($this->policy->admin($r->user()));
-        $d = $r->validate(['name' => 'required|string|max:160', 'model' => 'required|string|max:100', 'url' => ['required', 'url', 'regex:~^https://chat\\.whatsapp\\.com/[a-zA-Z0-9]+$~']]);
-        $c = Community::create($d);
-        Workflow::audit('community.created', $c);
+        $d = $r->validate(['name' => 'required|string|max:160', 'model' => 'required|string|max:100', 'url' => ['required', 'url', 'max:255', 'regex:~^https://chat\\.whatsapp\\.com/[a-zA-Z0-9]+$~']]);
+        $c = $community && $community->exists ? $community : new Community;
+        $previous = $c->exists ? $c->only('name', 'model', 'url') : null;
+        DB::transaction(function () use ($c, $d, $previous) {
+            $c->fill($d)->save();
+            Workflow::audit($previous ? 'community.updated' : 'community.created', $c, ['previous' => $previous]);
+        });
 
         return back();
     }

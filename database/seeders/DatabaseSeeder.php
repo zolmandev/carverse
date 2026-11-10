@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         }
         $password = Hash::make('CarverseDemo!2026');
         $owner = User::firstOrCreate(['email' => 'owner@carverse.test'], ['name' => 'Amani Wanjiru (Demo)', 'password' => $password, 'email_verified_at' => now(), 'phone' => '+254700000001']);
+        $owner->forceFill(['role' => 'admin'])->save();
         $admin = User::firstOrCreate(['email' => 'admin@carverse.test'], ['name' => 'Pilot Administrator (Demo)', 'password' => $password, 'email_verified_at' => now(), 'role' => 'admin']);
         User::firstOrCreate(['email' => 'moderator@carverse.test'], ['name' => 'Pilot Moderator (Demo)', 'password' => $password, 'email_verified_at' => now(), 'role' => 'moderator']);
         $second = User::firstOrCreate(['email' => 'owner2@carverse.test'], ['name' => 'Baraka Otieno (Demo)', 'password' => $password, 'email_verified_at' => now()]);

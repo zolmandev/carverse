@@ -55,3 +55,7 @@ All seed assessments and evidence are fictional training fixtures. No claim of r
 ## Feature removal verification
 
 Requests & bookings, Vehicle passport and Maintenance were removed from product screens and normal runtime routes. Reminder scheduling and already queued reminder delivery are disabled. Historical data remains intact. Archived workflow tests explicitly opt into the retained domain code; normal-runtime tests verify 404 responses and absence of retired page props. Final checks: 59 tests passed (236 assertions), TypeScript, ESLint and production build passed.
+
+## Focused super-user management
+
+The administrator now opens a dedicated workspace with WhatsApp group link CRUD/search and drag racing run submission, private GPS/slip downloads, auditable manual evidence review, and event/distance-specific verified rankings. Normal owner pages are not included in that workspace or its page props. Current verification: 65 tests passed (311 assertions), TypeScript, lint and production build passed. GPS/slip verification is manual; there is no automated GPS integration or timing certification.

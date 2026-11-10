@@ -1304,3 +1304,35 @@
     margin-bottom: 17px;
     letter-spacing: 0.3px;
 }
+.cv-group-url {
+    overflow-wrap: anywhere;
+}
+.cv-super-sidebar nav a {
+    font-size: 11px;
+}
+@media (max-width: 900px) {
+    .cv-super-sidebar {
+        position: static;
+        transform: none;
+        width: 100%;
+        padding: 18px;
+    }
+    .cv-super-sidebar .cv-pilot,
+    .cv-super-sidebar .cv-sidebar-bottom {
+        display: none;
+    }
+    .cv-super-sidebar nav {
+        flex-direction: row;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+    .cv-super-sidebar + .cv-main {
+        margin-left: 0;
+    }
+    .cv-super-sidebar nav a {
+        padding: 10px;
+    }
+    .cv-super-sidebar + .cv-main .cv-content {
+        padding-top: 25px;
+    }
+}

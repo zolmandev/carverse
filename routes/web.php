@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CarverseController as C;
 use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Controllers\SuperUserController;
 use App\Http\Middleware\RetiredWorkflow;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,6 +42,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/parts/{part}/fitment', [C::class, 'fitment']);
     Route::post('/articles', [C::class, 'content']);
     Route::post('/articles/{article}/publish', [C::class, 'publish']);
+    Route::put('/communities/{community}', [C::class, 'community']);
+    Route::post('/racing', [SuperUserController::class, 'storeRace']);
+    Route::post('/racing/{entry}/review', [SuperUserController::class, 'reviewRace']);
+    Route::get('/racing/{entry}/evidence/{kind}', [SuperUserController::class, 'evidence']);
     Route::delete('/communities/{community}', [C::class, 'removeCommunity']);
     Route::post('/communities', [C::class, 'community']);
     Route::post('/transactions/{transaction}/finance', [C::class, 'finance']);

@@ -1,5 +1,14 @@
 # Carverse KE
 
+## Current super-user workspace
+
+`owner@carverse.test` with the existing demo password opens `/app/admin` directly. Its workspace contains only WhatsApp group link management and Drag Racing Leaderboards. Group links support creation, search, editing and removal.
+
+Racing entries require a driver display name, vehicle, event, venue, date, distance, elapsed time, GPS evidence and timing slip. Private evidence files are downloadable by administrators only. New runs remain pending. Verification requires a recorded manual review of both evidence sources and confirmation that they describe the same run. Only verified entries rank, within the selected event and distance, ordered by elapsed milliseconds; equal times share a rank. Reopening or rejecting a run removes it from the verified leaderboard. No automatic GPS timing or equipment certification is claimed. No fictional racing results are seeded.
+
+Run `php artisan migrate` after updating to create the racing-entry table. The super-user racing workspace is `/app/admin?tab=racing`.
+
+
 > Current scope: Requests & bookings, Vehicle passport, and Maintenance have been removed from the product. Their navigation, dashboard sections, page/submission routes, public history links, and scheduled reminder delivery are disabled. Stored historical data and domain regression tests are retained. The original workflow descriptions below document that archived implementation, not currently available features.
 
 
@@ -70,7 +79,7 @@ Run `php artisan db:seed` in a non-production environment. Password for these **
 
 | Account | Purpose |
 | --- | --- |
-| `owner@carverse.test` | Owner with two vehicles, requests, records and reminders |
+| `owner@carverse.test` | Super user / administrator with full pilot administration and existing vehicles |
 | `owner2@carverse.test` | Separate owner for access-control exploration |
 | `garage1@carverse.test` … `garage5@carverse.test` | Staff of five fictional garages |
 | `supplier1@carverse.test` … `supplier3@carverse.test` | Staff of three fictional parts suppliers |
@@ -226,4 +235,4 @@ The implementation report in `docs/IMPLEMENTATION.md` records actual checks and 
 
 ## Later phases (not built and not advertised in navigation)
 
-Events/QR tickets; real-time SOS or towing dispatch; manufacturer-backed part authenticity; automatic official recalls; GPS racing leaderboards; consumer subscriptions; native mobile applications. Payment escrow, automatic payouts and split settlement are not claimed features.
+Events/QR tickets; real-time SOS or towing dispatch; manufacturer-backed part authenticity; automatic official recalls; consumer subscriptions; native mobile applications. Payment escrow, automatic payouts and split settlement are not claimed features.

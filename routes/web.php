@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CarverseController as C;
 use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Middleware\RetiredWorkflow;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -53,3 +54,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+// Retired product modules are inaccessible, including existing bookmarked links.
+foreach (Route::getRoutes() as $route) {
+    $uri = $route->uri();
+    if (preg_match('~^(requests(?:/|$)|quotes/|records(?:/|$)|reminders(?:/|$)|history/|shares/|payments/|vehicles/[^/]+/shares|transactions/[^/]+/(status|pay|reviews|complaints)$)~', $uri)) {
+        $route->middleware(RetiredWorkflow::class);
+    }
+}

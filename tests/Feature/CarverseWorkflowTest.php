@@ -43,6 +43,7 @@ class CarverseWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['carverse.legacy_workflows' => true]);
         $this->withoutVite();
         $this->owner = User::factory()->create();
         $this->staff = User::factory()->create();

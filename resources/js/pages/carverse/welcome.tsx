@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, BookOpen, Car, ShieldCheck, ShoppingBag, Wrench } from 'lucide-react';
+import { ArrowRight, Car, ShieldCheck, ShoppingBag, Wrench } from 'lucide-react';
 import { Badge, Card } from './ui';
 import './workspace.css';
 export default function Welcome() {
@@ -28,7 +28,7 @@ export default function Welcome() {
                     Your car.
                     <br />A little more confidence.
                 </h1>
-                <p>Find the right parts and trusted specialists for your car—and keep proof of every job.</p>
+                <p>Find the right parts and trusted specialists for your car.</p>
                 <Link href="/register" className="cv-button">
                     Start with your vehicle <ArrowRight size={16} />
                 </Link>{' '}
@@ -36,11 +36,10 @@ export default function Welcome() {
                     Explore specialists
                 </Link>
             </section>
-            <section className="cv-three-grid">
+            <section className="cv-two-grid">
                 {[
-                    [ShoppingBag, 'Parts that fit your car', 'Request a quote and see exactly what was checked for compatibility.'],
-                    [Wrench, 'Specialists with context', 'Get an itemized quote, agree the work, and follow its progress.'],
-                    [BookOpen, 'A history worth keeping', 'Save service details and evidence, with clear source labels.'],
+                    [ShoppingBag, 'Parts that fit your car', 'Browse parts and see exactly what was checked for compatibility.'],
+                    [Wrench, 'Specialists with context', 'Explore garages, their specialisms, locations, and contact details.'],
                 ].map(([Icon, t, d]) => {
                     const I = Icon as typeof Car;
                     return (
@@ -54,10 +53,7 @@ export default function Welcome() {
             </section>
             <section className="cv-trust-note">
                 <ShieldCheck />
-                <p>
-                    Carverse KE is a focused Nairobi pilot. Identity checks, compatibility assessments, and service-history evidence are separate.
-                    Payments start in clearly labeled demo mode.
-                </p>
+                <p>Carverse KE is a focused Nairobi pilot. Provider identity checks and compatibility assessments are separate.</p>
             </section>
         </div>
     );

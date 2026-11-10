@@ -21,7 +21,7 @@ export default function Directory({
                     carverse<span className="cv-ke">KE</span>
                 </Link>
                 <Link href="/register" className="cv-button">
-                    Add your car & request a quote
+                    Add your car
                 </Link>
             </header>
             <section>
@@ -54,7 +54,7 @@ export default function Directory({
                         </small>
                         <p>
                             <Link className="cv-link" href="/register">
-                                Register to request a quote →
+                                Explore parts and specialists →
                             </Link>
                         </p>
                     </Card>

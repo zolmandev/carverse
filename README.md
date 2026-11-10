@@ -1,5 +1,8 @@
 # Carverse KE
 
+> Current scope: Requests & bookings, Vehicle passport, and Maintenance have been removed from the product. Their navigation, dashboard sections, page/submission routes, public history links, and scheduled reminder delivery are disabled. Stored historical data and domain regression tests are retained. The original workflow descriptions below document that archived implementation, not currently available features.
+
+
 A working Laravel + Inertia automotive pilot for Nairobi. Owners add vehicles, request parts or service, accept a provider quote, record a demo payment, follow fulfilment, confirm completion, keep a private service history, review a completed transaction, and plan maintenance.
 
 **Seed data is fictional.** Provider checks in the demo are simulations, not real endorsements or verification. Demo payments never move money.

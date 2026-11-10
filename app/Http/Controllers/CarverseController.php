@@ -45,6 +45,8 @@ class CarverseController extends Controller
 
     public function index(Request $r, string $section = 'overview')
     {
+        abort_if(in_array($section, ['requests', 'passport', 'reminders']) && ! config('carverse.legacy_workflows'), 404);
+
         return Inertia::render('carverse/workspace', app(WorkspaceQuery::class)->props($r, $section));
     }
 

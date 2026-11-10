@@ -16,6 +16,9 @@ class SendMaintenanceReminder implements ShouldQueue
 
     public function handle(): void
     {
+        if (! config('carverse.legacy_workflows')) {
+            return;
+        }
         DB::transaction(function () {
             $r = Reminder::with('vehicle.owner')->lockForUpdate()->find($this->reminderId);
             if (! $r || $r->notified_at || ! $r->vehicle->owner->reminder_notifications) {

@@ -22,8 +22,8 @@ const footerNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Vehicle passport',
-        url: '/app/passport',
+        title: 'My garage',
+        url: '/app/garage',
         icon: BookOpen,
     },
 ];

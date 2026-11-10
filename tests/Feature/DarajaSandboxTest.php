@@ -24,6 +24,7 @@ class DarajaSandboxTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['carverse.legacy_workflows' => true]);
         config(['payments.driver' => 'daraja', 'payments.key' => 'test-key', 'payments.secret' => 'test-secret', 'payments.shortcode' => '174379', 'payments.passkey' => 'test-passkey', 'payments.callback_token' => 'test-callback-token']);
         $u = User::factory()->create();
         $v = Vehicle::factory()->create(['user_id' => $u->id]);
@@ -102,6 +103,6 @@ class DarajaSandboxTest extends TestCase
         $this->fakeQuery(merchant: 'wrong-merchant');
         $this->postJson('/payments/callback/wrong', $this->callbackPayload())->assertNotFound();
         $this->postJson('/payments/callback/test-callback-token', $this->callbackPayload())->assertOk();
-        $this->assertSame('unpaid',$this->transaction->fresh()->payment_status);
+        $this->assertSame('unpaid', $this->transaction->fresh()->payment_status);
     }
 }

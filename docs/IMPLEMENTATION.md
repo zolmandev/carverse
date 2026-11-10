@@ -1,5 +1,8 @@
 # Implementation report
 
+> Current scope: Requests & bookings, Vehicle passport, and Maintenance have been removed from the product. Their navigation, dashboard sections, page/submission routes, public history links, and scheduled reminder delivery are disabled. Stored historical data and domain regression tests are retained. The original workflow descriptions below document that archived implementation, not currently available features.
+
+
 ## Delivered
 
 Laravel 13.42.0 application in `carverse/`, based on the official React starter kit, with React 19, TypeScript, Inertia 3, Tailwind 4 and retained shadcn starter components. No separate API backend. PostgreSQL is configured in `.env.example`; local preview uses an ignored SQLite database because PostgreSQL tooling is not installed in the environment.
@@ -48,3 +51,7 @@ All seed assessments and evidence are fictional training fixtures. No claim of r
 - `vendor/bin/pint --test`: passed after formatting corrections.
 - `composer validate --strict --no-check-publish`: passed.
 - PostgreSQL GitHub Actions workflow supplied; not executed in this local session.
+
+## Feature removal verification
+
+Requests & bookings, Vehicle passport and Maintenance were removed from product screens and normal runtime routes. Reminder scheduling and already queued reminder delivery are disabled. Historical data remains intact. Archived workflow tests explicitly opt into the retained domain code; normal-runtime tests verify 404 responses and absence of retired page props. Final checks: 59 tests passed (236 assertions), TypeScript, ESLint and production build passed.

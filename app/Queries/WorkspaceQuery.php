@@ -49,7 +49,7 @@ class WorkspaceQuery
         });
         $providers = $this->providers();
 
-        return [
+        $data = [
             'demoData' => str_ends_with($u->email, '@carverse.test') && ! app()->environment('production'), 'section' => $section, 'vehicles' => $vehicles, 'activeVehicle' => $active, 'requests' => $requests, 'transactions' => $transactions, 'parts' => $parts, 'providers' => $providers, 'organizations' => $u->organizations()->get(), 'providerParts' => Part::with('organization')->whereIn('organization_id', $ids)->latest()->paginate(12, ['*'], 'provider_parts_page'),
             'records' => ServiceRecord::with(['attachments', 'revisions'])->whereIn('vehicle_id', $vehicles->pluck('id'))->latest('service_date')->get(),
             'reminders' => Reminder::with('vehicle')->whereIn('vehicle_id', $vehicles->pluck('id'))->get(),
@@ -61,6 +61,13 @@ class WorkspaceQuery
             'moderation' => in_array($u->role, ['moderator', 'admin']) ? Complaint::with(['transaction.organization', 'attachments'])->latest()->paginate(20) : null,
             'paymentMode' => config('payments.driver'), 'filters' => $r->only('q', 'category'), 'flash' => ['message' => session('message'), 'share_url' => session('share_url')],
         ];
+        if (! config('carverse.legacy_workflows')) {
+            foreach (['requests', 'transactions', 'records', 'reminders', 'shares', 'notifications', 'disputes'] as $key) {
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
     }
 
     public function providers(): Collection

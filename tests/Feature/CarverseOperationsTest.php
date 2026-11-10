@@ -22,6 +22,12 @@ class CarverseOperationsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['carverse.legacy_workflows' => true]);
+    }
+
     public function test_registration_vehicle_request_and_provider_quote_use_real_http_routes(): void
     {
         $this->post('/register', ['name' => 'New Owner', 'email' => 'new@example.test', 'password' => 'SecurePassword123!', 'password_confirmation' => 'SecurePassword123!'])->assertRedirect('/dashboard');

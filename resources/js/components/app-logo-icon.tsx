@@ -1,0 +1,5 @@
+import { Car } from 'lucide-react';
+import { SVGAttributes } from 'react';
+export default function AppLogoIcon(props: SVGAttributes<SVGSVGElement>) {
+    return <Car {...props} />;
+}

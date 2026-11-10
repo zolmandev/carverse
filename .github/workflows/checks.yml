@@ -1,0 +1,45 @@
+name: Application checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: carverse_test
+          POSTGRES_USER: carverse_test
+          POSTGRES_PASSWORD: ephemeral-ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U carverse_test -d carverse_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: carverse_test
+      DB_USERNAME: carverse_test
+      DB_PASSWORD: ephemeral-ci-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_pgsql,pdo_sqlite,mbstring,xml,curl,fileinfo
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+      - run: npm ci
+      - run: npm run types
+      - run: npm run lint
+      - run: npm run build
+      - run: php artisan test
+      - run: vendor/bin/pint --test
+      - run: composer validate --strict --no-check-publish

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CarCatalogController;
 use App\Http\Controllers\CarverseController as C;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\SuperUserController;
@@ -9,6 +10,7 @@ use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('carverse/welcome'))->name('home');
 Route::get('/photos/{type}/{id}', [C::class, 'photo'])->middleware('throttle:120,1');
+Route::get('/cars/brands/{brand}/logo', [CarCatalogController::class, 'logo']);
 Route::get('/directory', [C::class, 'publicDirectory']);
 Route::get('/history/{token}', [C::class, 'shared'])->middleware('throttle:30,1');
 Route::post('/payments/callback/{token}', PaymentCallbackController::class)->middleware('throttle:60,1');
@@ -42,6 +44,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/parts/{part}/fitment', [C::class, 'fitment']);
     Route::post('/articles', [C::class, 'content']);
     Route::post('/articles/{article}/publish', [C::class, 'publish']);
+    Route::get('/cars/brands/{brand}/models', [CarCatalogController::class, 'models']);
+    Route::get('/cars/models/{model}/trims', [CarCatalogController::class, 'trims']);
+    Route::post('/cars/brands', [CarCatalogController::class, 'brand']);
+    Route::put('/cars/brands/{brand}', [CarCatalogController::class, 'brand']);
+    Route::post('/cars/models', [CarCatalogController::class, 'model']);
+    Route::put('/cars/models/{model}', [CarCatalogController::class, 'model']);
+    Route::post('/cars/trims', [CarCatalogController::class, 'trim']);
+    Route::put('/cars/trims/{trim}', [CarCatalogController::class, 'trim']);
+    Route::delete('/cars/catalog/{kind}/{id}', [CarCatalogController::class, 'archive']);
     Route::put('/communities/{community}', [C::class, 'community']);
     Route::post('/racing', [SuperUserController::class, 'storeRace']);
     Route::post('/racing/{entry}/review', [SuperUserController::class, 'reviewRace']);

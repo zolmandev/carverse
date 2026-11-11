@@ -59,3 +59,11 @@ Requests & bookings, Vehicle passport and Maintenance were removed from product 
 ## Focused super-user management
 
 The administrator now opens a dedicated workspace with WhatsApp group link CRUD/search and drag racing run submission, private GPS/slip downloads, auditable manual evidence review, and event/distance-specific verified rankings. Normal owner pages are not included in that workspace or its page props. Current verification: 65 tests passed (311 assertions), TypeScript, lint and production build passed. GPS/slip verification is manual; there is no automated GPS integration or timing certification.
+
+## Cars management and normalized group selection
+
+Added database-backed brand → model → optional trim selection, parent validation, active/archive rules, searchable/paginated catalog tables, editing, archiving/reactivation and safe raster logo uploads. Imported an offline, attributed catalog snapshot and local logo assets. Current reference snapshot contains 422 brands, 11,054 models and 52,124 variants; preserved local records add one model in this workspace. There are 184 sourced logos, with initials fallback elsewhere. Imported configuration variants are not described as verified equipment grades or universal trim coverage.
+
+Tests cover admin-only access, mismatched brand/model/trim rejection, normalized group storage, create/edit/archive, seed repeatability and preservation of administrator edits, and private uploaded-logo storage and SVG rejection. Source/coverage and installation details are in `docs/catalog/README.md`. Browser inventory again returned no available browser, so visual inspection was unavailable.
+
+Final catalog verification: 72 tests passed (376 assertions), TypeScript, ESLint, production build and PHP formatting passed. Both catalog migrations ran successfully on the local SQLite database. Browser inventory was empty; PostgreSQL runtime remains the previously documented environment dependency.

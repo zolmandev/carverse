@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Workflow;
+use App\Http\Requests\CommunityRequest;
 use App\Http\Requests\VehicleRequest;
 use App\Models\Article;
 use App\Models\Attachment;
+use App\Models\CarModel;
 use App\Models\Community;
 use App\Models\Complaint;
 use App\Models\DeletionRequest;
@@ -52,7 +54,7 @@ class CarverseController extends Controller
                 return redirect('/app/admin');
             }
 
-return app(SuperUserController::class)->index($r);
+            return app(SuperUserController::class)->index($r);
         }
 
         return Inertia::render('carverse/workspace', app(WorkspaceQuery::class)->props($r, $section));
@@ -370,12 +372,15 @@ return app(SuperUserController::class)->index($r);
         return back();
     }
 
-    public function community(Request $r, ?Community $community = null)
+    public function community(CommunityRequest $r, ?Community $community = null)
     {
         $this->allow($this->policy->admin($r->user()));
-        $d = $r->validate(['name' => 'required|string|max:160', 'model' => 'required|string|max:100', 'url' => ['required', 'url', 'max:255', 'regex:~^https://chat\\.whatsapp\\.com/[a-zA-Z0-9]+$~']]);
+        $d = $r->validated();
+        $selectedModel = CarModel::with('brand')->findOrFail($d['car_model_id']);
+        $d['model'] = $selectedModel->brand->name.' '.$selectedModel->name;
+
         $c = $community && $community->exists ? $community : new Community;
-        $previous = $c->exists ? $c->only('name', 'model', 'url') : null;
+        $previous = $c->exists ? $c->only('name', 'model', 'url', 'car_brand_id', 'car_model_id', 'car_trim_id') : null;
         DB::transaction(function () use ($c, $d, $previous) {
             $c->fill($d)->save();
             Workflow::audit($previous ? 'community.updated' : 'community.created', $c, ['previous' => $previous]);

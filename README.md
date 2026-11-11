@@ -1,5 +1,12 @@
 # Carverse KE
 
+## Cars management
+
+The super user now has **Cars management** alongside WhatsApp groups and racing. Manage separate brands, models and trims/variants, with linked dropdowns in the WhatsApp group form. The seeded catalog has 422 brands, 11,054 bundled models (plus existing local model names), 52,124 trim/configuration records and 184 sourced logos. Coverage is broad rather than universal; year/market and equipment-grade versus powertrain-variant distinctions are retained.
+
+For installation or deployment: `php artisan migrate`, then `php -d memory_limit=512M artisan db:seed --class=CarCatalogSeeder --force`. This catalog-only seeder preserves administrator edits and creates no demo accounts. See [catalog documentation](docs/catalog/README.md) for sources, attribution, logo handling and coverage limits.
+
+
 ## Current super-user workspace
 
 `owner@carverse.test` with the existing demo password opens `/app/admin` directly. Its workspace contains only WhatsApp group link management and Drag Racing Leaderboards. Group links support creation, search, editing and removal.

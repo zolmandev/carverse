@@ -52,8 +52,8 @@ export function Field({
                     step={name === 'elapsed_seconds' ? '0.001' : name.includes('kes') ? '0.01' : undefined}
                     accept={
                         type === 'file'
-                            ? name === 'photo'
-                                ? '.jpg,.jpeg,.png'
+                            ? name === 'photo' || name === 'logo'
+                                ? '.jpg,.jpeg,.png,.webp'
                                 : name === 'gps'
                                   ? '.gpx,.json,.csv,.pdf,.jpg,.jpeg,.png'
                                   : '.pdf,.jpg,.jpeg,.png'

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\CarBrand;
+use App\Models\CarModel;
 use App\Models\Community;
 use App\Models\RacingEntry;
 use App\Models\User;
@@ -32,9 +34,11 @@ class SuperUserManagementTest extends TestCase
     public function test_admin_can_create_edit_and_remove_whatsapp_links(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));
-        $this->post('/communities', ['name' => 'Toyota Kenya', 'model' => 'Toyota', 'url' => 'https://chat.whatsapp.com/ExampleInvite123'])->assertRedirect();
+        $brand = CarBrand::create(['name' => 'Toyota', 'slug' => 'toyota']);
+        $model = CarModel::create(['car_brand_id' => $brand->id, 'name' => 'Fielder', 'slug' => 'fielder']);
+        $this->post('/communities', ['name' => 'Toyota Kenya', 'car_brand_id' => $brand->id, 'car_model_id' => $model->id, 'url' => 'https://chat.whatsapp.com/ExampleInvite123'])->assertRedirect();
         $g = Community::firstOrFail();
-        $this->put('/communities/'.$g->id, ['name' => 'Fielder Owners', 'model' => 'Fielder', 'url' => 'https://chat.whatsapp.com/Replacement123'])->assertRedirect();
+        $this->put('/communities/'.$g->id, ['name' => 'Fielder Owners', 'car_brand_id' => $brand->id, 'car_model_id' => $model->id, 'url' => 'https://chat.whatsapp.com/Replacement123'])->assertRedirect();
         $this->assertSame('Fielder Owners', $g->fresh()->name);
         $this->assertDatabaseHas('audit_events', ['action' => 'community.updated']);
         $this->delete('/communities/'.$g->id)->assertRedirect();

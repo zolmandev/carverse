@@ -2,10 +2,22 @@ import { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Car, ExternalLink, Flag, LogOut, Users } from 'lucide-react';
 import { useState } from 'react';
+import CarCatalog, { Brand, BrandMark, CarSelectFields, Catalog, CatalogAttribution, Model, Trim } from './car-catalog';
 import { Paginated } from './types';
 import { ActionForm, Badge, Card, date, Details, Empty, Field, Pager } from './ui';
 import './workspace.css';
-type Group = { id: number; name: string; model: string; url: string };
+type Group = {
+    id: number;
+    name: string;
+    model: string;
+    url: string;
+    car_brand_id: number | null;
+    car_model_id: number | null;
+    car_trim_id: number | null;
+    brand: Brand | null;
+    car_model: Model | null;
+    trim: Trim | null;
+};
 type Run = {
     id: number;
     driver: string;
@@ -21,8 +33,9 @@ type Run = {
     reviewer: { name: string } | null;
 };
 interface Props {
-    tab: 'groups' | 'racing';
-    vehicleModels: string[];
+    tab: 'groups' | 'racing' | 'cars';
+    carBrands: Brand[];
+    catalog: Catalog | null;
     groups: Paginated<Group>;
     entries: Paginated<Run>;
     leaderboard: Run[];
@@ -30,15 +43,15 @@ interface Props {
     filters: { q?: string; event?: string; distance?: string };
     flash: { message?: string };
 }
-function GroupFields({ group, vehicleModels }: { group?: Group; vehicleModels: string[] }) {
+function GroupFields({ group, brands }: { group?: Group; brands: Brand[] }) {
     return (
         <>
             <Field name="name" label="Group name" value={group?.name} />
-            <Field
-                name="model"
-                label="Vehicle model"
-                value={group?.model ?? ''}
-                options={[{ value: '', label: 'Select a vehicle model' }, ...vehicleModels.map((model) => ({ value: model, label: model }))]}
+            <CarSelectFields
+                brands={brands}
+                initialBrandId={group?.car_brand_id}
+                initialModelId={group?.car_model_id}
+                initialTrimId={group?.car_trim_id}
             />
             <Field name="url" label="WhatsApp invitation link" type="url" value={group?.url} />
         </>
@@ -47,11 +60,13 @@ function GroupFields({ group, vehicleModels }: { group?: Group; vehicleModels: s
 export default function SuperUser(p: Props) {
     const { auth } = usePage<SharedData>().props;
     const racing = p.tab === 'racing';
+    const cars = p.tab === 'cars';
+    const pageTitle = cars ? 'Cars management' : racing ? 'Drag Racing Leaderboards' : 'WhatsApp group links';
     const [editingGroupId, setEditingGroupId] = useState<number>();
     const editingGroup = p.groups.data.find((group) => group.id === editingGroupId);
     return (
         <div className="cv-app">
-            <Head title={racing ? 'Drag Racing Leaderboards' : 'WhatsApp group links'} />
+            <Head title={pageTitle} />
             <aside className="cv-sidebar cv-super-sidebar">
                 <Link href="/app/admin" className="cv-logo">
                     <span className="cv-logo-mark">
@@ -61,9 +76,13 @@ export default function SuperUser(p: Props) {
                 </Link>
                 <span className="cv-pilot">SUPER USER</span>
                 <nav>
-                    <Link href="/app/admin" className={!racing ? 'selected' : ''}>
+                    <Link href="/app/admin" className={p.tab === 'groups' ? 'selected' : ''}>
                         <Users size={19} />
                         WhatsApp group links
+                    </Link>
+                    <Link href="/app/admin?tab=cars" className={cars ? 'selected' : ''}>
+                        <Car size={19} />
+                        Cars management
                     </Link>
                     <Link href="/app/admin?tab=racing" className={racing ? 'selected' : ''}>
                         <Flag size={19} />
@@ -93,12 +112,14 @@ export default function SuperUser(p: Props) {
                 <main className="cv-content">
                     <div className="cv-page-heading">
                         <div>
-                            <p className="cv-eyebrow">{racing ? 'GPS & SLIP VERIFIED' : 'COMMUNITY MANAGEMENT'}</p>
-                            <h1>{racing ? 'Drag Racing Leaderboards' : 'WhatsApp group links'}</h1>
+                            <p className="cv-eyebrow">{cars ? 'VEHICLE CATALOG' : racing ? 'GPS & SLIP VERIFIED' : 'COMMUNITY MANAGEMENT'}</p>
+                            <h1>{pageTitle}</h1>
                             <p>
-                                {racing
-                                    ? 'Manage recorded runs and review GPS evidence and timing slips.'
-                                    : 'Add, edit, and remove the group links shown to your community.'}
+                                {cars
+                                    ? 'Manage brands, models, trims and brand logos.'
+                                    : racing
+                                      ? 'Manage recorded runs and review GPS evidence and timing slips.'
+                                      : 'Add, edit, and remove the group links shown to your community.'}
                             </p>
                         </div>
                     </div>
@@ -107,7 +128,13 @@ export default function SuperUser(p: Props) {
                             {p.flash.message}
                         </div>
                     )}
-                    {!racing ? (
+                    {cars && p.catalog ? (
+                        <CarCatalog
+                            key={`${p.catalog.level}-${p.catalog.filters.catalog_brand_id}-${p.catalog.filters.catalog_model_id}`}
+                            catalog={p.catalog}
+                            brands={p.carBrands}
+                        />
+                    ) : !racing ? (
                         <div className="cv-group-layout">
                             <section className="cv-group-list" aria-label="WhatsApp groups">
                                 <form method="get" action="/app/admin" className="cv-search">
@@ -127,7 +154,9 @@ export default function SuperUser(p: Props) {
                                                 <thead>
                                                     <tr>
                                                         <th scope="col">Group name</th>
-                                                        <th scope="col">Vehicle / community</th>
+                                                        <th scope="col">Brand</th>
+                                                        <th scope="col">Model</th>
+                                                        <th scope="col">Trim / variant</th>
                                                         <th scope="col">Join</th>
                                                         <th scope="col">Actions</th>
                                                     </tr>
@@ -139,7 +168,21 @@ export default function SuperUser(p: Props) {
                                                                 <strong>{g.name}</strong>
                                                             </td>
                                                             <td>
-                                                                <Badge>{g.model}</Badge>
+                                                                <div className="cv-brand-cell">
+                                                                    {g.brand && <BrandMark brand={g.brand} />}
+                                                                    <span>{g.brand?.name ?? 'Not assigned'}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td>{g.car_model?.name ?? g.model}</td>
+                                                            <td>
+                                                                {g.trim ? (
+                                                                    <>
+                                                                        {g.trim.name}
+                                                                        {g.trim.model_year && <small> · {g.trim.model_year}</small>}
+                                                                    </>
+                                                                ) : (
+                                                                    'All trims'
+                                                                )}
                                                             </td>
                                                             <td>
                                                                 <a
@@ -203,7 +246,7 @@ export default function SuperUser(p: Props) {
                                         method={editingGroup ? 'PUT' : undefined}
                                         label={editingGroup ? 'Save changes' : 'Add group link'}
                                     >
-                                        <GroupFields group={editingGroup} vehicleModels={p.vehicleModels} />
+                                        <GroupFields group={editingGroup} brands={p.carBrands} />
                                     </ActionForm>
                                     {editingGroup && (
                                         <button type="button" className="cv-link cv-group-cancel" onClick={() => setEditingGroupId(undefined)}>
@@ -373,6 +416,7 @@ export default function SuperUser(p: Props) {
                             </Card>
                         </>
                     )}
+                    <CatalogAttribution />
                     <footer className="cv-footer">Carverse KE · Super user</footer>
                 </main>
             </div>

@@ -1,0 +1,20 @@
+{
+  "retrieved": "2026-11-11",
+  "counts": {
+    "brands": 422,
+    "models": 11054,
+    "trims": 52124
+  },
+  "sources": [
+    "https://github.com/vehiclesdb/vehiclesdb/tree/v2026.11.6",
+    "https://trimslate.com/data",
+    "https://github.com/vehiclespecs/brand-logos"
+  ],
+  "note": "Coverage is not universal. Trimslate trim labels are imported as powertrain/trim variants, not asserted to be market-specific equipment grades.",
+  "raw_sha256": {
+    "carverse-source-brands.json": "7f4460f35de4a3e5e0bd8c704662317ad84f7d5e8614f692d8b2bb27e485e21b",
+    "carverse-source-models.json": "a564095fb417fb2c18dbac28c9b44fe64acb127f80197405b8fc3b406b54ab0c",
+    "carverse-source-trims.csv": "ee7e9dcd0a5766e380b6543b421a9de358a841b205f9fbab7541fb6740eb1988",
+    "carverse-brand-logos.zip": "e049f31bea349b045c794825b21260b0bb53cd4d11db8cd4624baa9849f092b6"
+  }
+}

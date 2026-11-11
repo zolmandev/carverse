@@ -20,6 +20,7 @@ import {
     Wrench,
 } from 'lucide-react';
 import { useState } from 'react';
+import { CatalogAttribution } from './car-catalog';
 import { Vehicle, WorkspaceProps } from './types';
 import { ActionForm, Badge, Card, date, Details, Empty, Field, money, Pager } from './ui';
 import './workspace.css';
@@ -931,6 +932,7 @@ export default function Workspace(p: WorkspaceProps) {
                             </Card>
                         </>
                     )}
+                    <CatalogAttribution />
                     <footer className="cv-footer">
                         <span>
                             CARVERSE KE <i /> Built around your car.

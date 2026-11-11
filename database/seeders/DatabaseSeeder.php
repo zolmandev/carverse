@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
         if (app()->environment('production')) {
             throw new \RuntimeException('Fictional demo seeding is forbidden in production.');
         }
+        $this->call(CarCatalogSeeder::class);
         $password = Hash::make('CarverseDemo!2026');
         $owner = User::firstOrCreate(['email' => 'owner@carverse.test'], ['name' => 'Amani Wanjiru (Demo)', 'password' => $password, 'email_verified_at' => now(), 'phone' => '+254700000001']);
         $owner->forceFill(['role' => 'admin'])->save();

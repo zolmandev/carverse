@@ -134,6 +134,8 @@ class CarCatalogTest extends TestCase
         $this->brand->update(['is_active' => false]);
         CarBrand::create(['name' => 'Mazda', 'slug' => 'mazda']);
         CarBrand::create(['name' => 'Honda', 'slug' => 'honda', 'is_active' => false]);
+        $this->get('/app/admin')->assertInertia(fn (Assert $p) => $p->has('carBrands', 1)->where('carBrands.0.name', 'Mazda')->where('carBrands.0.is_active', true));
+        $this->post('/communities', $this->groupData())->assertSessionHasErrors('car_brand_id');
         $this->get('/app/admin?tab=cars&catalog_level=brands')->assertInertia(fn (Assert $p) => $p->has('catalog.brands.data', 1)->where('catalog.brands.data.0.name', 'Mazda'));
         $this->get('/app/admin?tab=cars&catalog_level=archived-brands&q=Toyota')->assertInertia(fn (Assert $p) => $p->where('catalog.level', 'archived-brands')->has('catalog.brands.data', 1)->where('catalog.brands.data.0.name', 'Toyota')->where('catalog.brands.data.0.is_active', false));
         $this->model->update(['is_active' => false]);

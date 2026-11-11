@@ -1,6 +1,7 @@
 import { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Car, ExternalLink, Flag, LogOut, Users } from 'lucide-react';
+import { useState } from 'react';
 import { Paginated } from './types';
 import { ActionForm, Badge, Card, date, Details, Empty, Field, Pager } from './ui';
 import './workspace.css';
@@ -40,6 +41,8 @@ function GroupFields({ group }: { group?: Group }) {
 export default function SuperUser(p: Props) {
     const { auth } = usePage<SharedData>().props;
     const racing = p.tab === 'racing';
+    const [editingGroupId, setEditingGroupId] = useState<number>();
+    const editingGroup = p.groups.data.find((group) => group.id === editingGroupId);
     return (
         <div className="cv-app">
             <Head title={racing ? 'Drag Racing Leaderboards' : 'WhatsApp group links'} />
@@ -99,52 +102,112 @@ export default function SuperUser(p: Props) {
                         </div>
                     )}
                     {!racing ? (
-                        <>
-                            <Card title="Add a WhatsApp group">
-                                <ActionForm action="/communities" label="Add group link" wide>
-                                    <GroupFields />
-                                </ActionForm>
-                                <p>Use a WhatsApp group invitation link beginning with https://chat.whatsapp.com/.</p>
-                            </Card>
-                            <form method="get" action="/app/admin" className="cv-search">
-                                <input
-                                    name="q"
-                                    aria-label="Search groups"
-                                    placeholder="Search by group or vehicle model"
-                                    defaultValue={p.filters.q}
-                                />
-                                <button className="cv-button">Search</button>
-                            </form>
-                            <div className="cv-section-heading">
-                                <h2>Your group links</h2>
-                            </div>
-                            {p.groups.data.length ? (
-                                <div className="cv-two-grid">
-                                    {p.groups.data.map((g) => (
-                                        <Card key={g.id}>
-                                            <Badge>{g.model}</Badge>
-                                            <h2>{g.name}</h2>
-                                            <a className="cv-link cv-group-url" href={g.url} target="_blank" rel="noopener noreferrer">
-                                                Open WhatsApp group <ExternalLink size={15} />
-                                            </a>
-                                            <p className="cv-group-url">{g.url}</p>
-                                            <Details title="Edit group link">
-                                                <ActionForm action={`/communities/${g.id}`} method="PUT" label="Save changes">
-                                                    <GroupFields group={g} />
-                                                </ActionForm>
-                                            </Details>
-                                            <Details title="Remove group link">
-                                                <p>This removes the invitation from Carverse. It does not delete the WhatsApp group.</p>
-                                                <ActionForm action={`/communities/${g.id}`} method="DELETE" label="Remove link" />
-                                            </Details>
-                                        </Card>
-                                    ))}
-                                </div>
-                            ) : (
-                                <Empty>{p.filters.q ? 'No groups match your search.' : 'No group links yet. Add your first group above.'}</Empty>
-                            )}
-                            <Pager links={p.groups.links} />
-                        </>
+                        <div className="cv-group-layout">
+                            <section className="cv-group-list" aria-label="WhatsApp groups">
+                                <form method="get" action="/app/admin" className="cv-search">
+                                    <input
+                                        name="q"
+                                        aria-label="Search groups"
+                                        placeholder="Search by group or vehicle model"
+                                        defaultValue={p.filters.q}
+                                    />
+                                    <button className="cv-button">Search</button>
+                                </form>
+                                <Card title="Your group links">
+                                    {p.groups.data.length ? (
+                                        <div className="cv-table-scroll">
+                                            <table className="cv-group-table">
+                                                <caption className="sr-only">WhatsApp groups and management actions</caption>
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Group name</th>
+                                                        <th scope="col">Vehicle / community</th>
+                                                        <th scope="col">Join</th>
+                                                        <th scope="col">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {p.groups.data.map((g) => (
+                                                        <tr key={g.id} className={editingGroup?.id === g.id ? 'cv-group-editing' : ''}>
+                                                            <td>
+                                                                <strong>{g.name}</strong>
+                                                            </td>
+                                                            <td>
+                                                                <Badge>{g.model}</Badge>
+                                                            </td>
+                                                            <td>
+                                                                <a
+                                                                    className="cv-button cv-join-button"
+                                                                    href={g.url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    aria-label={`Join ${g.name} on WhatsApp (opens in a new tab)`}
+                                                                >
+                                                                    Join <ExternalLink size={13} />
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <div className="cv-group-actions">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="cv-link"
+                                                                        aria-pressed={editingGroup?.id === g.id}
+                                                                        onClick={() => setEditingGroupId(g.id)}
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <Details title="Remove">
+                                                                        <p>
+                                                                            This removes the invitation from Carverse. It does not delete the WhatsApp
+                                                                            group.
+                                                                        </p>
+                                                                        <ActionForm
+                                                                            action={`/communities/${g.id}`}
+                                                                            method="DELETE"
+                                                                            label="Remove link"
+                                                                        />
+                                                                    </Details>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <Empty>
+                                            {p.filters.q
+                                                ? 'No groups match your search.'
+                                                : 'No group links yet. Add your first group using the form.'}
+                                        </Empty>
+                                    )}
+                                    <Pager links={p.groups.links} />
+                                </Card>
+                            </section>
+                            <aside className="cv-group-form-sidebar" aria-label={editingGroup ? 'Edit WhatsApp group' : 'Add WhatsApp group'}>
+                                <Card title={editingGroup ? 'Edit WhatsApp group' : 'Add a WhatsApp group'}>
+                                    <p>
+                                        {editingGroup
+                                            ? 'Update the group details and invitation link.'
+                                            : 'Add a group for your community to discover and join.'}
+                                    </p>
+                                    <ActionForm
+                                        key={editingGroup?.id ?? 'new-group'}
+                                        action={editingGroup ? `/communities/${editingGroup.id}` : '/communities'}
+                                        method={editingGroup ? 'PUT' : undefined}
+                                        label={editingGroup ? 'Save changes' : 'Add group link'}
+                                    >
+                                        <GroupFields group={editingGroup} />
+                                    </ActionForm>
+                                    {editingGroup && (
+                                        <button type="button" className="cv-link cv-group-cancel" onClick={() => setEditingGroupId(undefined)}>
+                                            Cancel editing / add new group
+                                        </button>
+                                    )}
+                                    <p>Use a WhatsApp group invitation link beginning with https://chat.whatsapp.com/.</p>
+                                </Card>
+                            </aside>
+                        </div>
                     ) : (
                         <>
                             <Card title="Add a recorded run">

@@ -23,13 +23,13 @@ class CarCatalogController extends Controller
 
     public function page(Request $r): array
     {
-        $d = $r->validate(['catalog_level' => 'nullable|in:brands,models,trims', 'catalog_brand_id' => 'nullable|exists:car_brands,id', 'catalog_model_id' => 'nullable|exists:car_models,id', 'q' => 'nullable|string|max:160']);
+        $d = $r->validate(['catalog_level' => 'nullable|in:brands,models,archived-brands,trims', 'catalog_brand_id' => 'nullable|exists:car_brands,id', 'catalog_model_id' => 'nullable|exists:car_models,id', 'q' => 'nullable|string|max:160']);
         $search = $d['q'] ?? null;
         $brand = $d['catalog_brand_id'] ?? null;
         $model = $d['catalog_model_id'] ?? null;
 
         return ['level' => $d['catalog_level'] ?? 'brands', 'filters' => $d, 'stats' => ['brands' => CarBrand::count(), 'models' => CarModel::count(), 'trims' => CarTrim::count(), 'logos' => CarBrand::where(fn ($q) => $q->whereNotNull('logo_asset')->orWhereNotNull('logo_path'))->count()],
-            'brands' => CarBrand::withCount('models')->when($search, fn ($q, $s) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($s).'%']))->orderBy('name')->paginate(20, ['*'], 'brands_page')->withQueryString(),
+            'brands' => CarBrand::withCount('models')->where('is_active', ($d['catalog_level'] ?? 'brands') !== 'archived-brands')->when($search, fn ($q, $s) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($s).'%']))->orderBy('name')->paginate(20, ['*'], 'brands_page')->withQueryString(),
             'models' => CarModel::with('brand')->withCount('trims')->when($brand, fn ($q) => $q->where('car_brand_id', $brand))->when($search, fn ($q, $s) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($s).'%']))->orderBy('name')->paginate(20, ['*'], 'models_page')->withQueryString(),
             'trims' => CarTrim::with('model.brand')->when($model, fn ($q) => $q->where('car_model_id', $model))->when($brand, fn ($q) => $q->whereHas('model', fn ($q) => $q->where('car_brand_id', $brand)))->when($search, fn ($q, $s) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($s).'%']))->orderByDesc('model_year')->orderBy('name')->paginate(25, ['*'], 'trims_page')->withQueryString()];
     }
@@ -71,7 +71,7 @@ class CarCatalogController extends Controller
             Workflow::audit($previous ? 'car_brand.updated' : 'car_brand.created', $brand, ['previous' => $previous]);
         });
 
-        return redirect('/app/admin?tab=cars&catalog_level=brands')->with('message', 'Brand saved.');
+        return redirect('/app/admin?tab=cars&catalog_level='.($d['is_active'] ? 'brands' : 'archived-brands'))->with('message', 'Brand saved.');
     }
 
     public function model(Request $r, ?CarModel $model = null)
@@ -127,13 +127,24 @@ class CarCatalogController extends Controller
             Workflow::audit('car_catalog.archived', $record);
         });
 
-        return back()->with('message','Archived. Existing group associations are preserved.');
+        return back()->with('message', 'Archived. Existing group associations are preserved.');
+    }
+
+    public function restoreBrand(Request $r, CarBrand $brand)
+    {
+        $this->authorizeAdmin($r);
+        DB::transaction(function () use ($brand) {
+            $brand->update(['is_active' => true]);
+            Workflow::audit('car_brand.restored', $brand);
+        });
+
+        return back()->with('message', 'Brand restored to the Brands tab.');
     }
 
     public function logo(CarBrand $brand)
     {
-        abort_unless($brand->logo_path,404);
+        abort_unless($brand->logo_path, 404);
 
-        return response()->file(Storage::disk('local')->path($brand->logo_path),['X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'public, max-age=3600']);
+        return response()->file(Storage::disk('local')->path($brand->logo_path), ['X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'public, max-age=3600']);
     }
 }

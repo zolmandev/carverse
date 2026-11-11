@@ -34,7 +34,7 @@ export type Trim = {
     model: Model;
 };
 export type Catalog = {
-    level: 'brands' | 'models' | 'trims';
+    level: 'brands' | 'models' | 'archived-brands' | 'trims';
     filters: { q?: string; catalog_brand_id?: string; catalog_model_id?: string };
     stats: { brands: number; models: number; trims: number; logos: number };
     brands: Paginated<Brand>;
@@ -236,7 +236,8 @@ export default function CarCatalog({ catalog: c, brands }: { catalog: Catalog; b
     const [editingBrand, setBrand] = useState<Brand>();
     const [editingModel, setModel] = useState<Model>();
     const [editingTrim, setTrim] = useState<Trim>();
-    const level = c.level;
+    const archived = c.level === 'archived-brands';
+    const level = c.level === 'archived-brands' ? 'brands' : c.level;
     const edit = level === 'brands' ? editingBrand : level === 'models' ? editingModel : editingTrim;
     const base = '/app/admin?tab=cars';
     const link = (l: string, b?: number, m?: number) =>
@@ -257,18 +258,18 @@ export default function CarCatalog({ catalog: c, brands }: { catalog: Catalog; b
                 grade. Missing data can be added below.
             </div>
             <nav className="cv-catalog-tabs" aria-label="Car catalog sections">
-                {['brands', 'models', 'trims'].map((l) => (
-                    <Link key={l} href={link(l)} className={level === l ? 'active' : ''}>
-                        {l === 'trims' ? 'Trims & variants' : l}
+                {['brands', 'archived-brands', 'models', 'trims'].map((l) => (
+                    <Link key={l} href={link(l)} className={c.level === l ? 'active' : ''}>
+                        {l === 'trims' ? 'Trims & variants' : l === 'archived-brands' ? 'Archived brands' : l}
                     </Link>
                 ))}
             </nav>
             <div className="cv-group-layout">
                 <section className="cv-group-list">
-                    <Card title={`Manage ${level === 'trims' ? 'trims & variants' : level}`}>
+                    <Card title={archived ? 'Archived brands' : `Manage ${level === 'trims' ? 'trims & variants' : level}`}>
                         <form method="get" action="/app/admin" className="cv-form wide">
                             <input type="hidden" name="tab" value="cars" />
-                            <input type="hidden" name="catalog_level" value={level} />
+                            <input type="hidden" name="catalog_level" value={c.level} />
                             {level !== 'brands' && (
                                 <CarSelectFields
                                     key={`filter-${c.filters.catalog_brand_id}-${c.filters.catalog_model_id}`}
@@ -333,6 +334,7 @@ export default function CarCatalog({ catalog: c, brands }: { catalog: Catalog; b
                                                         <Link className="cv-link" href={link('models', b.id)}>
                                                             Models
                                                         </Link>
+                                                        {!b.is_active && <ActionForm action={`/cars/brands/${b.id}/restore`} label="Restore" />}
                                                         {b.is_active && (
                                                             <ActionForm action={`/cars/catalog/brands/${b.id}`} method="DELETE" label="Archive" />
                                                         )}
@@ -402,85 +404,98 @@ export default function CarCatalog({ catalog: c, brands }: { catalog: Catalog; b
                                 </tbody>
                             </table>
                         </div>
-                        {!c[level].data.length && <Empty>No matching {level}. Add an entry using the form.</Empty>}
+                        {!c[level].data.length && (
+                            <Empty>
+                                {archived ? 'No archived brands match your filters.' : `No matching ${level}. Add an entry using the form.`}
+                            </Empty>
+                        )}
                         <Pager links={c[level].links} />
                     </Card>
                 </section>
                 <aside className="cv-group-form-sidebar">
-                    <Card title={`${edit ? 'Edit' : 'Add'} ${level === 'brands' ? 'brand' : level === 'models' ? 'model' : 'trim / variant'}`}>
-                        <ActionForm
-                            key={formKey}
-                            action={`/cars/${level}${edit ? `/${edit.id}` : ''}`}
-                            method={edit ? 'PUT' : undefined}
-                            label={edit ? 'Save changes' : 'Add entry'}
-                        >
-                            {level === 'models' && (
-                                <CarSelectFields
-                                    brands={brands}
-                                    initialBrandId={editingModel?.car_brand_id ?? c.filters.catalog_brand_id}
-                                    showModel={false}
-                                    includeArchived
-                                />
-                            )}
-                            {level === 'trims' && (
-                                <CarSelectFields
-                                    brands={brands}
-                                    initialBrandId={editingTrim?.model.car_brand_id ?? c.filters.catalog_brand_id}
-                                    initialModelId={editingTrim?.car_model_id ?? c.filters.catalog_model_id}
-                                    showTrim={false}
-                                    includeArchived
-                                />
-                            )}
-                            <MetaFields row={edit} />
-                            {level === 'brands' && (
-                                <>
-                                    <Field name="logo" label="Logo (PNG, JPEG or WebP, up to 2 MB)" type="file" required={false} />
-                                    {editingBrand && <BrandMark brand={editingBrand} />}
-                                    <small>Brands without a logo display their initials.</small>
-                                </>
-                            )}
-                            {level === 'trims' && (
-                                <>
-                                    <Field
-                                        name="kind"
-                                        label="Record type"
-                                        value={editingTrim?.kind ?? 'grade'}
-                                        options={[
-                                            { value: 'grade', label: 'Equipment grade / trim' },
-                                            { value: 'variant', label: 'Variant / configuration' },
-                                        ]}
-                                    />
-                                    <Field
-                                        name="model_year"
-                                        label="Model year (optional)"
-                                        type="number"
-                                        required={false}
-                                        min={1886}
-                                        max={new Date().getFullYear() + 2}
-                                        value={editingTrim?.model_year ?? ''}
-                                    />
-                                    <Field name="market" label="Market" value={editingTrim?.market ?? 'Kenya'} />
-                                </>
-                            )}
-                        </ActionForm>
-                        {edit && (
-                            <button
-                                className="cv-link cv-group-cancel"
-                                type="button"
-                                onClick={() => {
-                                    setBrand(undefined);
-                                    setModel(undefined);
-                                    setTrim(undefined);
-                                }}
+                    {archived && !edit ? (
+                        <Card title="Archived brands">
+                            <p>
+                                Choose Restore to move a brand back to the Brands tab, or Edit to update its details. Existing group links are
+                                preserved.
+                            </p>
+                        </Card>
+                    ) : (
+                        <Card title={`${edit ? 'Edit' : 'Add'} ${level === 'brands' ? 'brand' : level === 'models' ? 'model' : 'trim / variant'}`}>
+                            <ActionForm
+                                key={formKey}
+                                action={`/cars/${level}${edit ? `/${edit.id}` : ''}`}
+                                method={edit ? 'PUT' : undefined}
+                                label={edit ? 'Save changes' : 'Add entry'}
                             >
-                                Cancel editing / add new
-                            </button>
-                        )}
-                        <p>
-                            Archive entries to remove them from new selections while preserving existing groups. Edit an archived entry to reactivate
-                            it.
-                        </p>
-                    </Card>
+                                {level === 'models' && (
+                                    <CarSelectFields
+                                        brands={brands}
+                                        initialBrandId={editingModel?.car_brand_id ?? c.filters.catalog_brand_id}
+                                        showModel={false}
+                                        includeArchived
+                                    />
+                                )}
+                                {level === 'trims' && (
+                                    <CarSelectFields
+                                        brands={brands}
+                                        initialBrandId={editingTrim?.model.car_brand_id ?? c.filters.catalog_brand_id}
+                                        initialModelId={editingTrim?.car_model_id ?? c.filters.catalog_model_id}
+                                        showTrim={false}
+                                        includeArchived
+                                    />
+                                )}
+                                <MetaFields row={edit} />
+                                {level === 'brands' && (
+                                    <>
+                                        <Field name="logo" label="Logo (PNG, JPEG or WebP, up to 2 MB)" type="file" required={false} />
+                                        {editingBrand && <BrandMark brand={editingBrand} />}
+                                        <small>Brands without a logo display their initials.</small>
+                                    </>
+                                )}
+                                {level === 'trims' && (
+                                    <>
+                                        <Field
+                                            name="kind"
+                                            label="Record type"
+                                            value={editingTrim?.kind ?? 'grade'}
+                                            options={[
+                                                { value: 'grade', label: 'Equipment grade / trim' },
+                                                { value: 'variant', label: 'Variant / configuration' },
+                                            ]}
+                                        />
+                                        <Field
+                                            name="model_year"
+                                            label="Model year (optional)"
+                                            type="number"
+                                            required={false}
+                                            min={1886}
+                                            max={new Date().getFullYear() + 2}
+                                            value={editingTrim?.model_year ?? ''}
+                                        />
+                                        <Field name="market" label="Market" value={editingTrim?.market ?? 'Kenya'} />
+                                    </>
+                                )}
+                            </ActionForm>
+                            {edit && (
+                                <button
+                                    className="cv-link cv-group-cancel"
+                                    type="button"
+                                    onClick={() => {
+                                        setBrand(undefined);
+                                        setModel(undefined);
+                                        setTrim(undefined);
+                                    }}
+                                >
+                                    Cancel editing / add new
+                                </button>
+                            )}
+                            <p>
+                                Archive entries to remove them from new selections while preserving existing groups. Edit an archived entry to
+                                reactivate it.
+                            </p>
+                        </Card>
+                    )}
                 </aside>
             </div>
         </>

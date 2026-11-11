@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cars/models/{model}/trims', [CarCatalogController::class, 'trims']);
     Route::post('/cars/brands', [CarCatalogController::class, 'brand']);
     Route::put('/cars/brands/{brand}', [CarCatalogController::class, 'brand']);
+    Route::post('/cars/brands/{brand}/restore', [CarCatalogController::class, 'restoreBrand']);
     Route::post('/cars/models', [CarCatalogController::class, 'model']);
     Route::put('/cars/models/{model}', [CarCatalogController::class, 'model']);
     Route::post('/cars/trims', [CarCatalogController::class, 'trim']);

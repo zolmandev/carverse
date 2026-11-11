@@ -127,4 +127,28 @@ class CarCatalogTest extends TestCase
         $this->get('/cars/brands/'.$b->id.'/logo')->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->put('/cars/brands/'.$b->id, ['name' => 'Toyota', 'is_active' => 1, 'logo' => UploadedFile::fake()->createWithContent('unsafe.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>')])->assertSessionHasErrors('logo');
     }
+
+    public function test_active_and_archived_brand_tabs_are_separate_and_searchable(): void
+    {
+        $this->admin();
+        $this->brand->update(['is_active' => false]);
+        CarBrand::create(['name' => 'Mazda', 'slug' => 'mazda']);
+        CarBrand::create(['name' => 'Honda', 'slug' => 'honda', 'is_active' => false]);
+        $this->get('/app/admin?tab=cars&catalog_level=brands')->assertInertia(fn (Assert $p) => $p->has('catalog.brands.data', 1)->where('catalog.brands.data.0.name', 'Mazda'));
+        $this->get('/app/admin?tab=cars&catalog_level=archived-brands&q=Toyota')->assertInertia(fn (Assert $p) => $p->where('catalog.level', 'archived-brands')->has('catalog.brands.data', 1)->where('catalog.brands.data.0.name', 'Toyota')->where('catalog.brands.data.0.is_active', false));
+        $this->model->update(['is_active' => false]);
+        $this->get('/app/admin?tab=cars&catalog_level=models')->assertInertia(fn (Assert $p) => $p->has('catalog.models.data', 1)->where('catalog.models.data.0.id', $this->model->id));
+    }
+
+    public function test_only_admin_can_restore_an_archived_brand(): void
+    {
+        $this->brand->update(['is_active' => false]);
+        $this->actingAs(User::factory()->create())->post('/cars/brands/'.$this->brand->id.'/restore')->assertForbidden();
+        $this->admin();
+        $this->post('/cars/brands/'.$this->brand->id.'/restore')->assertRedirect();
+        $this->assertTrue($this->brand->fresh()->is_active);
+        $this->assertDatabaseHas('audit_events', ['action' => 'car_brand.restored']);
+        $this->get('/app/admin?tab=cars&catalog_level=archived-brands')->assertInertia(fn (Assert $p) => $p->has('catalog.brands.data', 0));
+        $this->get('/app/admin?tab=cars&catalog_level=brands')->assertInertia(fn (Assert $p) => $p->has('catalog.brands.data', 1)->where('catalog.brands.data.0.id', $this->brand->id));
+    }
 }

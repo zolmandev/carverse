@@ -31,8 +31,11 @@ export default function Directory({
             <div className="cv-two-grid">
                 {providers.map((p) => (
                     <Card key={p.id}>
-                        <Badge tone="green">Identity checked · {p.kind}</Badge>
-                        <h2>{p.name}</h2>
+                        <Badge tone="green">Application approved · {p.kind}</Badge>
+                        <div className="cv-provider-heading">
+                            {p.logo_url && <img className="cv-provider-logo" src={p.logo_url} alt={`${p.name} logo`} />}
+                            <h2>{p.name}</h2>
+                        </div>
                         {p.photo_url && <img className="cv-uploaded-photo" src={p.photo_url} alt={p.name} />}
                         <p>
                             <MapPin className="cv-inline" size={15} /> {p.location}

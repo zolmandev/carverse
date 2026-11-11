@@ -11,6 +11,7 @@ use Inertia\Inertia;
 Route::get('/', fn () => Inertia::render('carverse/welcome'))->name('home');
 Route::get('/photos/{type}/{id}', [C::class, 'photo'])->middleware('throttle:120,1');
 Route::get('/cars/brands/{brand}/logo', [CarCatalogController::class, 'logo']);
+Route::get('/provider-logos/{organization}', [C::class, 'providerLogo'])->middleware('throttle:120,1');
 Route::get('/directory', [C::class, 'publicDirectory']);
 Route::get('/history/{token}', [C::class, 'shared'])->middleware('throttle:30,1');
 Route::post('/payments/callback/{token}', PaymentCallbackController::class)->middleware('throttle:60,1');
@@ -37,7 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/attachments/{attachment}', [C::class, 'download']);
     Route::post('/vehicles/{vehicle}/shares', [C::class, 'share'])->middleware('throttle:10,1');
     Route::delete('/shares/{share}', [C::class, 'revoke']);
-    Route::post('/providers/apply', [C::class, 'apply']);
+    Route::post('/providers/{organization}/logo', [C::class, 'updateProviderLogo']);
+    Route::post('/providers/apply', [C::class, 'apply'])->middleware('throttle:5,10');
     Route::post('/providers/{organization}/review', [C::class, 'approve']);
     Route::post('/parts', [C::class, 'part']);
     Route::put('/parts/{part}', [C::class, 'part']);

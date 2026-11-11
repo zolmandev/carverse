@@ -1472,3 +1472,39 @@
 .cv-catalog-tabs + .cv-group-layout .cv-form.wide {
     margin-bottom: 22px;
 }
+.cv-provider-review .cv-check {
+    align-items: flex-start;
+    line-height: 1.7;
+}
+.cv-provider-review .cv-check input {
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+.cv-provider-review .cv-tags a {
+    overflow-wrap: anywhere;
+}
+.cv-provider-review h3 {
+    margin-top: 22px;
+}
+.cv-provider-logo {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border: 1px solid #e7e9ec;
+    border-radius: 8px;
+    background: white;
+    padding: 5px;
+}
+.cv-provider-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+.cv-provider-heading h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Workflow;
 use App\Models\CarBrand;
 use App\Models\Community;
+use App\Models\Organization;
 use App\Models\RacingEntry;
 use App\Policies\WorkspacePolicy;
 use Illuminate\Http\Request;
@@ -22,9 +23,15 @@ class SuperUserController extends Controller
     public function index(Request $r)
     {
         $this->authorizeAdmin($r);
-        $d = $r->validate(['q' => 'nullable|string|max:160', 'tab' => 'nullable|in:groups,racing,cars', 'event' => 'nullable|string|max:160', 'distance' => 'nullable|in:201,402']);
+        $d = $r->validate(['q' => 'nullable|string|max:160', 'tab' => 'nullable|in:groups,racing,cars,approvals', 'provider_status' => 'nullable|in:pending,approved,rejected', 'provider_kind' => 'nullable|in:garage,mechanic,supplier', 'event' => 'nullable|string|max:160', 'distance' => 'nullable|in:201,402']);
 
-        return Inertia::render('carverse/super-user', ['carBrands' => CarBrand::when(($d['tab'] ?? 'groups') !== 'cars', fn ($q) => $q->where('is_active', true))->orderBy('name')->get(), 'catalog' => ($d['tab'] ?? 'groups') === 'cars' ? app(CarCatalogController::class)->page($r) : null, 'tab' => $d['tab'] ?? 'groups', 'groups' => Community::with('brand', 'carModel', 'trim')->when($d['q'] ?? null, fn ($q, $value) => $q->where(fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%'])->orWhereRaw('LOWER(model) LIKE ?', ['%'.mb_strtolower($value).'%'])->orWhereHas('brand', fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%']))->orWhereHas('carModel', fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%']))))->latest()->paginate(12, ['*'], 'groups_page')->withQueryString(), 'entries' => RacingEntry::with('reviewer:id,name')->when($d['event'] ?? null, fn ($q, $value) => $q->where('event', $value))->when($d['distance'] ?? null, fn ($q, $value) => $q->where('distance_metres', $value))->orderBy('elapsed_ms')->paginate(20, ['*'], 'entries_page')->withQueryString(), 'leaderboard' => ! empty($d['event']) && ! empty($d['distance']) ? RacingEntry::where('status', 'verified')->where('event', $d['event'])->where('distance_metres', $d['distance'])->orderBy('elapsed_ms')->orderBy('id')->limit(100)->get() : [], 'events' => RacingEntry::select('event')->distinct()->orderBy('event')->pluck('event'), 'filters' => $d, 'flash' => ['message' => session('message')]]);
+        $applications = null;
+        if (($d['tab'] ?? 'groups') === 'approvals') {
+            $query = Organization::with(['members:id,name,email', 'attachments', 'reviewer:id,name'])->where('status', $d['provider_status'] ?? 'pending')->when($d['provider_kind'] ?? null, fn ($q, $kind) => $q->where('kind', $kind))->when($d['q'] ?? null, fn ($q, $search) => $q->where(fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($search).'%'])->orWhereRaw('LOWER(location) LIKE ?', ['%'.mb_strtolower($search).'%'])));
+            $applications = ['status' => $d['provider_status'] ?? 'pending', 'counts' => Organization::selectRaw('status, COUNT(*) AS count')->groupBy('status')->pluck('count', 'status'), 'providers' => $query->latest()->paginate(15, ['*'], 'applications_page')->withQueryString()->through(fn ($o) => $o->makeVisible(['qualifications', 'review_note', 'reviewed_by']))];
+        }
+
+        return Inertia::render('carverse/super-user', ['applications' => $applications, 'carBrands' => CarBrand::when(($d['tab'] ?? 'groups') !== 'cars', fn ($q) => $q->where('is_active', true))->orderBy('name')->get(), 'catalog' => ($d['tab'] ?? 'groups') === 'cars' ? app(CarCatalogController::class)->page($r) : null, 'tab' => $d['tab'] ?? 'groups', 'groups' => Community::with('brand', 'carModel', 'trim')->when($d['q'] ?? null, fn ($q, $value) => $q->where(fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%'])->orWhereRaw('LOWER(model) LIKE ?', ['%'.mb_strtolower($value).'%'])->orWhereHas('brand', fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%']))->orWhereHas('carModel', fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%']))))->latest()->paginate(12, ['*'], 'groups_page')->withQueryString(), 'entries' => RacingEntry::with('reviewer:id,name')->when($d['event'] ?? null, fn ($q, $value) => $q->where('event', $value))->when($d['distance'] ?? null, fn ($q, $value) => $q->where('distance_metres', $value))->orderBy('elapsed_ms')->paginate(20, ['*'], 'entries_page')->withQueryString(), 'leaderboard' => ! empty($d['event']) && ! empty($d['distance']) ? RacingEntry::where('status', 'verified')->where('event', $d['event'])->where('distance_metres', $d['distance'])->orderBy('elapsed_ms')->orderBy('id')->limit(100)->get() : [], 'events' => RacingEntry::select('event')->distinct()->orderBy('event')->pluck('event'), 'filters' => $d, 'flash' => ['message' => session('message')]]);
     }
 
     public function storeRace(Request $r)

@@ -76,6 +76,7 @@ export default function Workspace(p: WorkspaceProps) {
     const vehicleOptions = p.vehicles.map((v) => ({ value: v.id, label: `${v.make} ${v.model} · ${v.registration || v.year}` }));
     const orgOptions = p.organizations.filter((o) => o.status === 'approved').map((o) => ({ value: o.id, label: o.name }));
     const isProvider = orgOptions.length > 0;
+    const isSupplier = p.organizations.some((o) => o.status === 'approved' && o.kind === 'supplier');
     const title = titles[p.section] ?? titles.overview;
     const nav = [
         ['overview', 'Overview', LayoutDashboard],
@@ -420,10 +421,15 @@ export default function Workspace(p: WorkspaceProps) {
                                         <span className="cv-icon-bg">
                                             <Wrench size={24} />
                                         </span>
-                                        <Badge tone="green">Identity checked</Badge>
+                                        <Badge tone="green">Application approved</Badge>
                                     </div>
-                                    <span className="cv-eyebrow">{o.kind === 'garage' ? 'SPECIALIST GARAGE' : 'PARTS SUPPLIER'}</span>
-                                    <h2>{o.name}</h2>
+                                    <span className="cv-eyebrow">
+                                        {o.kind === 'garage' ? 'SPECIALIST GARAGE' : o.kind === 'mechanic' ? 'MECHANIC' : 'PARTS SUPPLIER'}
+                                    </span>
+                                    <div className="cv-provider-heading">
+                                        {o.logo_url && <img className="cv-provider-logo" src={o.logo_url} alt={`${o.name} logo`} />}
+                                        <h2>{o.name}</h2>
+                                    </div>
                                     {o.photo_url && <img className="cv-uploaded-photo" src={o.photo_url} alt={o.name} />}
                                     <p>
                                         <MapPin size={14} className="cv-inline" /> {o.location}
@@ -499,12 +505,21 @@ export default function Workspace(p: WorkspaceProps) {
                             <Card title="Your organizations">
                                 {p.organizations.map((o) => (
                                     <div className="cv-note" key={o.id}>
-                                        <strong>{o.name}</strong> <Badge>{o.status}</Badge>
+                                        <div className="cv-provider-heading">
+                                            {o.logo_url && <img className="cv-provider-logo" src={o.logo_url} alt={`${o.name} logo`} />}
+                                            <strong>{o.name}</strong> <Badge>{o.status}</Badge>
+                                        </div>
                                         <p>{o.verification_scope ?? 'Application awaiting review.'}</p>
+                                        {o.review_note && <p>Review notes: {o.review_note}</p>}
+                                        <Details title="Add or update your logo">
+                                            <ActionForm action={`/providers/${o.id}/logo`} label="Save logo">
+                                                <Field name="logo" label="Logo (PNG, JPEG or WebP, up to 2 MB)" type="file" />
+                                            </ActionForm>
+                                        </Details>
                                     </div>
                                 ))}
                             </Card>
-                            {isProvider && (
+                            {isSupplier && (
                                 <>
                                     <Card title="Add a supplier part">
                                         <ActionForm action="/parts" label="Publish part" wide>
@@ -603,25 +618,50 @@ export default function Workspace(p: WorkspaceProps) {
                                     </Card>
                                 </>
                             )}
-                            <Card title="Apply as a garage or supplier">
+                            <Card title="Apply as a garage, mechanic or supplier">
                                 <ActionForm action="/providers/apply" label="Submit application" wide>
+                                    <Field
+                                        name="logo"
+                                        label="Garage / business logo (optional, PNG, JPEG or WebP, up to 2 MB)"
+                                        type="file"
+                                        required={false}
+                                    />
                                     <Field name="photo" label="Provider photo (optional, JPEG / PNG, up to 5 MB)" type="file" required={false} />
-                                    <Field name="name" label="Organization name" />
+                                    <Field name="name" label="Garage, business or professional name" />
                                     <Field
                                         name="kind"
                                         label="Provider type"
                                         options={[
                                             { value: 'garage', label: 'Garage' },
+                                            { value: 'mechanic', label: 'Skilled mechanic' },
                                             { value: 'supplier', label: 'Parts supplier' },
                                         ]}
                                     />
                                     <Field name="location" label="Location" />
                                     <Field name="phone" label="Kenyan phone number" type="tel" />
-                                    <Field name="description" label="About your organization" type="textarea" />
+                                    <Field name="description" label="About your garage or services" type="textarea" />
+                                    <Field
+                                        name="years_experience"
+                                        label="Years of experience (self-reported, optional)"
+                                        type="number"
+                                        min={0}
+                                        max={80}
+                                        required={false}
+                                    />
+                                    <Field
+                                        name="qualifications"
+                                        label="Qualifications / training (private, optional)"
+                                        type="textarea"
+                                        required={false}
+                                    />
                                     <Field name="specialties[]" label="Supported make (optional)" required={false} />
                                     <Field name="specialties[]" label="Specialist service (optional)" required={false} />
                                     <Field name="opening_hours" label="Opening hours" />
-                                    <Field name="evidence" label="Identity/business evidence, private (up to 5 MB)" type="file" />
+                                    <Field
+                                        name="evidence"
+                                        label="Identity, business or trade qualification evidence (private, up to 5 MB)"
+                                        type="file"
+                                    />
                                 </ActionForm>
                             </Card>
                         </>

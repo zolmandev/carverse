@@ -47,6 +47,9 @@ class CarverseController extends Controller
 
     public function index(Request $r, string $section = 'overview')
     {
+        if ($r->query('tab') === 'approvals') {
+            $this->allow($this->policy->admin($r->user()));
+        }
         abort_if(in_array($section, ['requests', 'passport', 'reminders']) && ! config('carverse.legacy_workflows'), 404);
 
         if ($r->user()->role === 'admin') {
@@ -304,25 +307,74 @@ class CarverseController extends Controller
 
     public function apply(Request $r)
     {
-        $d = $r->validate(['name' => 'required|string|max:160', 'kind' => 'required|in:garage,supplier', 'location' => 'required|string|max:160', 'phone' => ['required', 'regex:/^(?:\+?254|0)[17][0-9]{8}$/'], 'description' => 'required|string|max:2000', 'specialties' => 'nullable|array|max:20', 'specialties.*' => 'nullable|string|max:100', 'opening_hours' => 'required|string|max:200', 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120', 'evidence' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120']);
-        $o = Organization::create(collect($d)->except('evidence', 'photo')->all());
-        if ($r->hasFile('photo')) {
-            $o->update(['photo_path' => $r->file('photo')->store('photos', 'local')]);
-        }$o->members()->attach($r->user()->id);
-        $this->upload($r, ['organization_id' => $o->id]);
-        Workflow::audit('provider.applied', $o);
+        $d = $r->validate(['name' => 'required|string|max:160', 'kind' => 'required|in:garage,mechanic,supplier', 'location' => 'required|string|max:160', 'phone' => ['required', 'regex:/^(?:\+?254|0)[17][0-9]{8}$/'], 'description' => 'required|string|max:2000', 'years_experience' => 'nullable|integer|between:0,80', 'qualifications' => 'nullable|string|max:2000', 'specialties' => 'nullable|array|max:20', 'specialties.*' => 'nullable|string|max:100', 'opening_hours' => 'required|string|max:200', 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120', 'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048', 'evidence' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120']);
+        $paths = [];
+        try {
+            DB::transaction(function () use ($r, $d, &$paths) {
+                $attributes = collect($d)->except('evidence', 'photo', 'logo')->all();
+                $attributes['specialties'] = array_values(array_filter($d['specialties'] ?? []));
+                foreach (['photo' => 'photo_path', 'logo' => 'logo_path'] as $field => $column) {
+                    if ($r->hasFile($field)) {
+                        $paths[] = $path = $r->file($field)->store($field === 'logo' ? 'provider-logos' : 'photos', 'local');
+                        $attributes[$column] = $path;
+                    }
+                }
+                $provider = Organization::create($attributes);
+                $provider->members()->attach($r->user()->id);
+                $paths[] = $evidence = $r->file('evidence')->store('evidence', 'local');
+                Attachment::create(['organization_id' => $provider->id, 'user_id' => $r->user()->id, 'path' => $evidence, 'name' => basename($r->file('evidence')->getClientOriginalName())]);
+                Workflow::audit('provider.applied', $provider);
+            });
+        } catch (\Throwable $e) {
+            foreach ($paths as $path) {
+                Storage::disk('local')->delete($path);
+            }throw $e;
+        }
 
-        return back()->with('message', 'Application submitted. Staff access starts after approval.');
+        return back()->with('message', 'Application submitted. Staff access and public listing start after approval.');
+    }
+
+    public function providerLogo(Request $r, Organization $organization)
+    {
+        $viewer = $r->user();
+        $canView = $organization->status === 'approved' || ($viewer && ($this->policy->admin($viewer) || $viewer->organizations()->whereKey($organization->id)->exists()));
+        abort_unless($canView && $organization->logo_path, 404);
+
+        return response()->file(Storage::disk('local')->path($organization->logo_path), ['X-Content-Type-Options' => 'nosniff', 'Cache-Control' => $organization->status === 'approved' ? 'public, max-age=3600' : 'private, no-store']);
+    }
+
+    public function updateProviderLogo(Request $r, Organization $organization)
+    {
+        $this->allow($this->policy->admin($r->user()) || $r->user()->organizations()->whereKey($organization->id)->exists());
+        $r->validate(['logo' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048']);
+        $path = $r->file('logo')->store('provider-logos', 'local');
+        try {
+            DB::transaction(function () use ($organization, $path) {
+                $organization->update(['logo_path' => $path]);
+                Workflow::audit('provider.logo_updated', $organization);
+            });
+        } catch (\Throwable $e) {
+            Storage::disk('local')->delete($path);
+            throw $e;
+        }
+
+        return back()->with('message', 'Logo updated. It appears publicly once your provider profile is approved.');
     }
 
     public function approve(Request $r, Organization $organization)
     {
         $this->allow($this->policy->admin($r->user()));
-        $d = $r->validate(['status' => 'required|in:approved,rejected,pending', 'verification_scope' => 'required|string|max:2000']);
-        $organization->update($d + ['verified_at' => $d['status'] === 'approved' ? now() : null]);
-        Workflow::audit('provider.reviewed', $organization, $d);
+        $d = $r->validate(['status' => 'required|in:approved,rejected,pending', 'verification_scope' => 'nullable|required_if:status,approved|string|max:2000', 'review_note' => 'required|string|max:3000', 'evidence_checked' => 'accepted_if:status,approved']);
+        DB::transaction(function () use ($r, $organization, $d) {
+            $provider = Organization::lockForUpdate()->findOrFail($organization->id);
+            if ($d['status'] === 'approved' && ! $provider->attachments()->get()->contains(fn ($file) => Storage::disk('local')->exists($file->path))) {
+                throw ValidationException::withMessages(['evidence_checked' => 'Available supporting documents are required before approval.']);
+            }
+            Workflow::audit('provider.reviewed', $provider, ['previous' => $provider->only('status', 'verification_scope', 'verified_at', 'review_note', 'reviewed_by', 'reviewed_at'), 'decision' => $d]);
+            $provider->update(collect($d)->except('evidence_checked')->all() + ['verified_at' => $d['status'] === 'approved' ? now() : null, 'reviewed_at' => now(), 'reviewed_by' => $r->user()->id]);
+        });
 
-        return back();
+        return back()->with('message', 'Application review saved. Only approved providers appear in the directory.');
     }
 
     public function part(Request $r, ?Part $part = null)

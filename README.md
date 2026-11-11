@@ -1,5 +1,14 @@
 # Carverse KE
 
+## Garage and mechanic approvals and logos
+
+Provider applicants can register as a garage, skilled mechanic, or parts supplier through `/app/provider`. Applications include private supporting evidence and may include claimed experience, private qualification details, a separate business logo (PNG/JPEG/WebP, up to 2 MB) and a provider photo. New applications remain pending. Existing members can add or replace their organization's logo in the same workspace.
+
+The super-user menu now includes **Provider approvals** (`/app/admin?tab=approvals`), with Pending, Approved and Rejected tabs, provider-type/search filters, private document downloads, applicant contacts, logo preview, reviewer attribution and decision notes. Approval requires available evidence, explicit confirmation of review, public verification scope and private feedback. Only approved providers are listed publicly and gain organization staff access. Rejection or a return to pending removes both. Decision feedback is visible to the applicant; qualifications and review notes are excluded from public profiles. Recorded checks describe the reviewed scope, not a blanket guarantee of skill or work quality.
+
+Pending provider logos are visible only to administrators and organization members. Approved provider logos appear on their directory profiles. Logos use private storage with a scoped image endpoint; SVG uploads are not accepted. Run `php artisan migrate` to apply the provider review and logo columns.
+
+
 ## Cars management
 
 The super user now has **Cars management** alongside WhatsApp groups and racing. Manage separate brands, models and trims/variants, with linked dropdowns in the WhatsApp group form. The seeded catalog has 422 brands, 11,054 bundled models (plus existing local model names), 52,124 trim/configuration records and 184 sourced logos. Coverage is broad rather than universal; year/market and equipment-grade versus powertrain-variant distinctions are retained.

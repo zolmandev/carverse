@@ -50,7 +50,7 @@ class WorkspaceQuery
         $providers = $this->providers();
 
         $data = [
-            'demoData' => str_ends_with($u->email, '@carverse.test') && ! app()->environment('production'), 'section' => $section, 'vehicles' => $vehicles, 'activeVehicle' => $active, 'requests' => $requests, 'transactions' => $transactions, 'parts' => $parts, 'providers' => $providers, 'organizations' => $u->organizations()->get(), 'providerParts' => Part::with('organization')->whereIn('organization_id', $ids)->latest()->paginate(12, ['*'], 'provider_parts_page'),
+            'demoData' => str_ends_with($u->email, '@carverse.test') && ! app()->environment('production'), 'section' => $section, 'vehicles' => $vehicles, 'activeVehicle' => $active, 'requests' => $requests, 'transactions' => $transactions, 'parts' => $parts, 'providers' => $providers, 'organizations' => $u->organizations()->get()->makeVisible(['review_note', 'qualifications']), 'providerParts' => Part::with('organization')->whereIn('organization_id', $ids)->latest()->paginate(12, ['*'], 'provider_parts_page'),
             'records' => ServiceRecord::with(['attachments', 'revisions'])->whereIn('vehicle_id', $vehicles->pluck('id'))->latest('service_date')->get(),
             'reminders' => Reminder::with('vehicle')->whereIn('vehicle_id', $vehicles->pluck('id'))->get(),
             'shares' => HistoryShare::whereIn('vehicle_id', $vehicles->pluck('id'))->get(['id', 'vehicle_id', 'record_ids', 'expires_at', 'revoked_at']),

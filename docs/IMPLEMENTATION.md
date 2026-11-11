@@ -67,3 +67,11 @@ Added database-backed brand → model → optional trim selection, parent valida
 Tests cover admin-only access, mismatched brand/model/trim rejection, normalized group storage, create/edit/archive, seed repeatability and preservation of administrator edits, and private uploaded-logo storage and SVG rejection. Source/coverage and installation details are in `docs/catalog/README.md`. Browser inventory again returned no available browser, so visual inspection was unavailable.
 
 Final catalog verification: 72 tests passed (376 assertions), TypeScript, ESLint, production build and PHP formatting passed. Both catalog migrations ran successfully on the local SQLite database. Browser inventory was empty; PostgreSQL runtime remains the previously documented environment dependency.
+
+## Garage/mechanic applications, approval and logos
+
+Added a dedicated super-user Provider approvals panel with status tabs, search/type filters, private evidence review, public verification scope, feedback, reviewer/time and audit history. Mechanic applications now persist alongside garages and suppliers, with optional experience and private qualification claims. Approval requires available evidence and explicit review confirmation; only approved providers are public and acquire staff capabilities. Rejection/pending revokes those capabilities.
+
+Garages can upload a separate PNG/JPEG/WebP logo during application or replace it through their organization workspace. Pending logos are restricted to members/admin; approved logos appear in the directory. Storage paths, qualifications and feedback are hidden publicly.
+
+Verification: 80 tests passed (570 assertions), TypeScript, lint and production build passed. Provider-specific tests cover garage/mechanic applications, document and logo privacy, approval requirements, admin-only decisions, rejection/reopening, and authorized raster-logo updates/SVG rejection. Database migrations ran on the local SQLite development database. Browser inspection remains unavailable.

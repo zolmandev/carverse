@@ -19,6 +19,10 @@ export interface Attachment {
     name: string;
 }
 export interface Organization {
+    logo_url: string | null;
+    years_experience: number | null;
+    qualifications?: string | null;
+    review_note?: string | null;
     photo_url: string | null;
     id: number;
     name: string;

@@ -1,8 +1,9 @@
 import { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Car, ExternalLink, Flag, LogOut, Users } from 'lucide-react';
+import { Car, ExternalLink, Flag, LogOut, ShieldCheck, Users } from 'lucide-react';
 import { useState } from 'react';
 import CarCatalog, { Brand, BrandMark, CarSelectFields, Catalog, CatalogAttribution, Model, Trim } from './car-catalog';
+import ProviderApprovals, { Applications } from './provider-approvals';
 import { Paginated } from './types';
 import { ActionForm, Badge, Card, date, Details, Empty, Field, Pager } from './ui';
 import './workspace.css';
@@ -33,14 +34,15 @@ type Run = {
     reviewer: { name: string } | null;
 };
 interface Props {
-    tab: 'groups' | 'racing' | 'cars';
+    tab: 'groups' | 'racing' | 'cars' | 'approvals';
+    applications: Applications | null;
     carBrands: Brand[];
     catalog: Catalog | null;
     groups: Paginated<Group>;
     entries: Paginated<Run>;
     leaderboard: Run[];
     events: string[];
-    filters: { q?: string; event?: string; distance?: string };
+    filters: { q?: string; event?: string; distance?: string; provider_status?: string; provider_kind?: string };
     flash: { message?: string };
 }
 function GroupFields({ group, brands }: { group?: Group; brands: Brand[] }) {
@@ -61,7 +63,14 @@ export default function SuperUser(p: Props) {
     const { auth } = usePage<SharedData>().props;
     const racing = p.tab === 'racing';
     const cars = p.tab === 'cars';
-    const pageTitle = cars ? 'Cars management' : racing ? 'Drag Racing Leaderboards' : 'WhatsApp group links';
+    const approvals = p.tab === 'approvals';
+    const pageTitle = approvals
+        ? 'Garage & mechanic approvals'
+        : cars
+          ? 'Cars management'
+          : racing
+            ? 'Drag Racing Leaderboards'
+            : 'WhatsApp group links';
     const [editingGroupId, setEditingGroupId] = useState<number>();
     const editingGroup = p.groups.data.find((group) => group.id === editingGroupId);
     return (
@@ -83,6 +92,10 @@ export default function SuperUser(p: Props) {
                     <Link href="/app/admin?tab=cars" className={cars ? 'selected' : ''}>
                         <Car size={19} />
                         Cars management
+                    </Link>
+                    <Link href="/app/admin?tab=approvals" className={approvals ? 'selected' : ''}>
+                        <ShieldCheck size={19} />
+                        Provider approvals
                     </Link>
                     <Link href="/app/admin?tab=racing" className={racing ? 'selected' : ''}>
                         <Flag size={19} />
@@ -112,14 +125,24 @@ export default function SuperUser(p: Props) {
                 <main className="cv-content">
                     <div className="cv-page-heading">
                         <div>
-                            <p className="cv-eyebrow">{cars ? 'VEHICLE CATALOG' : racing ? 'GPS & SLIP VERIFIED' : 'COMMUNITY MANAGEMENT'}</p>
+                            <p className="cv-eyebrow">
+                                {approvals
+                                    ? 'PROVIDER APPLICATIONS'
+                                    : cars
+                                      ? 'VEHICLE CATALOG'
+                                      : racing
+                                        ? 'GPS & SLIP VERIFIED'
+                                        : 'COMMUNITY MANAGEMENT'}
+                            </p>
                             <h1>{pageTitle}</h1>
                             <p>
-                                {cars
-                                    ? 'Manage brands, models, trims and brand logos.'
-                                    : racing
-                                      ? 'Manage recorded runs and review GPS evidence and timing slips.'
-                                      : 'Add, edit, and remove the group links shown to your community.'}
+                                {approvals
+                                    ? 'Review new garages and skilled mechanics before they join the directory.'
+                                    : cars
+                                      ? 'Manage brands, models, trims and brand logos.'
+                                      : racing
+                                        ? 'Manage recorded runs and review GPS evidence and timing slips.'
+                                        : 'Add, edit, and remove the group links shown to your community.'}
                             </p>
                         </div>
                     </div>
@@ -128,7 +151,13 @@ export default function SuperUser(p: Props) {
                             {p.flash.message}
                         </div>
                     )}
-                    {cars && p.catalog ? (
+                    {approvals && p.applications ? (
+                        <ProviderApprovals
+                            key={`${p.applications.status}-${p.filters.provider_kind}-${p.filters.q}`}
+                            applications={p.applications}
+                            filters={p.filters}
+                        />
+                    ) : cars && p.catalog ? (
                         <CarCatalog
                             key={`${p.catalog.level}-${p.catalog.filters.catalog_brand_id}-${p.catalog.filters.catalog_model_id}`}
                             catalog={p.catalog}

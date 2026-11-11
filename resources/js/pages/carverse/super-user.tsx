@@ -22,6 +22,7 @@ type Run = {
 };
 interface Props {
     tab: 'groups' | 'racing';
+    vehicleModels: string[];
     groups: Paginated<Group>;
     entries: Paginated<Run>;
     leaderboard: Run[];
@@ -29,11 +30,16 @@ interface Props {
     filters: { q?: string; event?: string; distance?: string };
     flash: { message?: string };
 }
-function GroupFields({ group }: { group?: Group }) {
+function GroupFields({ group, vehicleModels }: { group?: Group; vehicleModels: string[] }) {
     return (
         <>
             <Field name="name" label="Group name" value={group?.name} />
-            <Field name="model" label="Vehicle model or community" value={group?.model} />
+            <Field
+                name="model"
+                label="Vehicle model"
+                value={group?.model ?? ''}
+                options={[{ value: '', label: 'Select a vehicle model' }, ...vehicleModels.map((model) => ({ value: model, label: model }))]}
+            />
             <Field name="url" label="WhatsApp invitation link" type="url" value={group?.url} />
         </>
     );
@@ -197,7 +203,7 @@ export default function SuperUser(p: Props) {
                                         method={editingGroup ? 'PUT' : undefined}
                                         label={editingGroup ? 'Save changes' : 'Add group link'}
                                     >
-                                        <GroupFields group={editingGroup} />
+                                        <GroupFields group={editingGroup} vehicleModels={p.vehicleModels} />
                                     </ActionForm>
                                     {editingGroup && (
                                         <button type="button" className="cv-link cv-group-cancel" onClick={() => setEditingGroupId(undefined)}>

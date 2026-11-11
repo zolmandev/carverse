@@ -1,5 +1,16 @@
 # Carverse KE
 
+## Reviews and cases for approved providers
+
+Open **Provider approvals → Approved**, then choose **Reviews** or **Cases** beside a garage or mechanic. Both show totals and pending moderation counts. The selected provider's records are paginated, filterable by moderation status, and include recent moderation history.
+
+Reviews require an administrator's recorded publication decision, reason and content check. Approval is allowed only for the owning customer's completed transaction. Only approved, eligible reviews contribute to public rating counts and averages. Original ratings are not edited by moderation. Provider replies wait for review separately; submitting a reply does not hide an already approved review or alter its rating contribution.
+
+Case approval accepts the evidence-backed submission for review; it does not establish the allegation as true, resolve the dispute, or publish the case. Administrators can inspect private evidence, record a resolution, and separately approve an intentionally redacted public summary. The summary requires an approved case, a recorded resolution, a publication reason and redaction confirmation. Reopening moderation, changing a resolution, or an appeal withdraws the earlier summary until a new publication decision is recorded. Public pages never include case evidence or the private case body.
+
+Run `php artisan migrate` after updating. Existing reviews and cases begin with pending moderation; their original contents and ratings are retained. This management addition does not re-enable retired booking or customer-submission routes.
+
+
 ## Garage and mechanic approvals and logos
 
 Provider applicants can register as a garage, skilled mechanic, or parts supplier through `/app/provider`. Applications include private supporting evidence and may include claimed experience, private qualification details, a separate business logo (PNG/JPEG/WebP, up to 2 MB) and a provider photo. New applications remain pending. Existing members can add or replace their organization's logo in the same workspace.

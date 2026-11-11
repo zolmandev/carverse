@@ -1,8 +1,13 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import ProviderFeedback, { Feedback } from './provider-feedback';
 import { Paginated } from './types';
 import { ActionForm, Badge, Card, date, Empty, Field, Pager } from './ui';
 type Application = {
+    reviews_count: number;
+    complaints_count: number;
+    pending_reviews_count: number;
+    pending_cases_count: number;
     logo_url: string | null;
     id: number;
     name: string;
@@ -24,7 +29,7 @@ type Application = {
     members: { id: number; name: string; email: string }[];
     attachments: { id: number; name: string }[];
 };
-export type Applications = { status: string; counts: Record<string, number | string>; providers: Paginated<Application> };
+export type Applications = { feedback: Feedback | null; status: string; counts: Record<string, number | string>; providers: Paginated<Application> };
 export type ApplicationFilters = { q?: string; provider_kind?: string; provider_status?: string };
 const kindLabel = (kind: string) => (kind === 'garage' ? 'Garage' : kind === 'mechanic' ? 'Skilled mechanic' : 'Parts supplier');
 function ReviewForm({ provider }: { provider: Application }) {
@@ -73,6 +78,7 @@ export default function ProviderApprovals({ applications: a, filters }: { applic
             ...(filters.provider_kind ? { provider_kind: filters.provider_kind } : {}),
             ...(filters.q ? { q: filters.q } : {}),
         }).toString();
+    if (a.feedback) return <ProviderFeedback data={a.feedback} />;
     return (
         <>
             <nav className="cv-catalog-tabs" aria-label="Provider application status">
@@ -112,6 +118,7 @@ export default function ProviderApprovals({ applications: a, filters }: { applic
                                             <th>Location</th>
                                             <th>Submitted</th>
                                             <th>Action</th>
+                                            {a.status === 'approved' && <th>Reviews & cases</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -133,6 +140,30 @@ export default function ProviderApprovals({ applications: a, filters }: { applic
                                                         Review
                                                     </button>
                                                 </td>
+                                                {a.status === 'approved' && (
+                                                    <td>
+                                                        <div className="cv-group-actions">
+                                                            <Link
+                                                                className="cv-link"
+                                                                href={`/app/admin?tab=approvals&provider_status=approved&provider_id=${o.id}&feedback=reviews`}
+                                                            >
+                                                                Reviews ({o.reviews_count})
+                                                                {o.pending_reviews_count > 0 && (
+                                                                    <Badge tone="amber">{o.pending_reviews_count} pending</Badge>
+                                                                )}
+                                                            </Link>
+                                                            <Link
+                                                                className="cv-link"
+                                                                href={`/app/admin?tab=approvals&provider_status=approved&provider_id=${o.id}&feedback=cases`}
+                                                            >
+                                                                Cases ({o.complaints_count})
+                                                                {o.pending_cases_count > 0 && (
+                                                                    <Badge tone="amber">{o.pending_cases_count} pending</Badge>
+                                                                )}
+                                                            </Link>
+                                                        </div>
+                                                    </td>
+                                                )}
                                             </tr>
                                         ))}
                                     </tbody>

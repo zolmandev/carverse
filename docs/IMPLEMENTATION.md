@@ -75,3 +75,11 @@ Added a dedicated super-user Provider approvals panel with status tabs, search/t
 Garages can upload a separate PNG/JPEG/WebP logo during application or replace it through their organization workspace. Pending logos are restricted to members/admin; approved logos appear in the directory. Storage paths, qualifications and feedback are hidden publicly.
 
 Verification: 80 tests passed (570 assertions), TypeScript, lint and production build passed. Provider-specific tests cover garage/mechanic applications, document and logo privacy, approval requirements, admin-only decisions, rejection/reopening, and authorized raster-logo updates/SVG rejection. Database migrations ran on the local SQLite development database. Browser inspection remains unavailable.
+
+## Approved-provider reviews and cases
+
+Approved-provider rows now link to provider-scoped Reviews and Cases management, with counts, pending badges, status filters, pagination and moderation history. Added review publication status, reason/reviewer/time, and provider-response publication status. Only approved reviews from completed transactions belonging to their reviewer contribute publicly; moderation cannot rewrite the rating fields.
+
+Case intake approval, case resolution and public-summary approval are separate actions. Intake approval requires available private evidence. Public summaries require an accepted and resolved/dismissed case plus explicit redaction confirmation and a reason. Review rejection, resolution changes and appeals withdraw stale summaries while retaining audit history. Original private case records and evidence are never automatically published. All new moderation endpoints require admin authority, an approved provider and a matching provider/record relationship. Existing moderator case actions retain their earlier role scope but respect the new publication gate.
+
+The migration preserves existing records and starts moderation as pending. Retired booking and customer-submission modules remain disabled. Verification: 87 tests passed (714 assertions), TypeScript, lint and production build passed. Tests include provider scoping and admin authority, publication eligibility, immutable rating inputs, provider reply moderation without rating suppression, private case approval, resolution/publication/redaction gates, unpublishing, and appeal-driven withdrawal.

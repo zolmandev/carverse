@@ -30,6 +30,16 @@ class Organization extends Model
         return ['specialties' => 'array', 'verified_at' => 'datetime', 'reviewed_at' => 'datetime', 'years_experience' => 'integer'];
     }
 
+    public function reviews()
+    {
+        return $this->hasManyThrough(Review::class, Transaction::class, 'organization_id', 'transaction_id');
+    }
+
+    public function complaints()
+    {
+        return $this->hasManyThrough(Complaint::class, Transaction::class, 'organization_id', 'transaction_id');
+    }
+
     public function attachments()
     {
         return $this->hasMany(Attachment::class);

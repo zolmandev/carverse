@@ -65,7 +65,7 @@ class CarverseController extends Controller
 
     public function publicDirectory()
     {
-        return Inertia::render('carverse/directory', ['providers' => app(WorkspaceQuery::class)->providers(), 'summaries' => Complaint::whereNotNull('public_summary')->get(['public_summary', 'updated_at'])]);
+        return Inertia::render('carverse/directory', ['providers' => app(WorkspaceQuery::class)->providers(), 'summaries' => Complaint::where('moderation_status', 'approved')->whereIn('status', ['resolved', 'dismissed'])->whereNotNull('public_approved_at')->whereNotNull('public_summary')->get(['public_summary', 'updated_at'])]);
     }
 
     public function vehicle(VehicleRequest $r)
@@ -222,7 +222,11 @@ class CarverseController extends Controller
     public function respondReview(Request $r, Review $review)
     {
         $this->allow($r->user()->inOrganization($review->transaction->organization_id));
-        $review->update($r->validate(['response' => 'required|string|max:2000']));
+        $d = $r->validate(['response' => 'required|string|max:2000']);
+        DB::transaction(function () use ($review, $d) {
+            Workflow::audit('review.response_submitted', $review, ['previous_response' => $review->response]);
+            $review->update($d + ['response_status' => 'pending']);
+        });
 
         return back();
     }
@@ -254,10 +258,18 @@ class CarverseController extends Controller
                 $d = $r->validate(['decision' => 'required|string|max:5000', 'status' => 'required|in:resolved,dismissed']);
                 break;
             default:$this->allow($this->policy->moderate($r->user()));
-                abort_unless(in_array($complaint->status, ['resolved', 'dismissed']), 422);
-                $d = $r->validate(['public_summary' => 'required|string|max:2000']);
+                abort_unless($complaint->moderation_status === 'approved' && in_array($complaint->status, ['resolved', 'dismissed']), 422);
+                $d = $r->validate(['public_summary' => 'required|string|max:2000', 'redaction_confirmed' => 'accepted']);
+                unset($d['redaction_confirmed']);
+                $d += ['public_approved_by' => $r->user()->id, 'public_approved_at' => now()];
         }DB::transaction(function () use ($complaint, $d, $action) {
             Workflow::audit('complaint.'.$action, $complaint, ['previous' => $complaint->only('status', 'decision', 'appeal', 'public_summary'), 'changes' => $d]);
+            if (in_array($action, ['appeal', 'decide'])) {
+                $d += ['public_summary' => null, 'public_approved_by' => null, 'public_approved_at' => null];
+            }
+            if ($action === 'appeal') {
+                $d['moderation_status'] = 'pending';
+            }
             $complaint->update($d);
         });
 

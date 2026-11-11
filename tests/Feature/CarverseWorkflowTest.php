@@ -205,10 +205,10 @@ class CarverseWorkflowTest extends TestCase
     public function test_only_moderators_can_intentionally_publish_resolved_complaint(): void
     {
         $t = $this->accepted();
-        $c = Complaint::create(['user_id' => $this->owner->id, 'transaction_id' => $t->id, 'body' => 'Private complaint', 'status' => 'resolved', 'decision' => 'Evidence reviewed']);
-        $this->actingAs($this->staff)->post('/complaints/'.$c->id, ['action' => 'publish', 'public_summary' => 'Redacted summary'])->assertForbidden();
+        $c = Complaint::create(['user_id' => $this->owner->id, 'transaction_id' => $t->id, 'body' => 'Private complaint', 'moderation_status' => 'approved', 'status' => 'resolved', 'decision' => 'Evidence reviewed']);
+        $this->actingAs($this->staff)->post('/complaints/'.$c->id, ['action' => 'publish', 'public_summary' => 'Redacted summary', 'redaction_confirmed' => 1])->assertForbidden();
         $m = User::factory()->create(['role' => 'moderator']);
-        $this->actingAs($m)->post('/complaints/'.$c->id, ['action' => 'publish', 'public_summary' => 'Redacted summary'])->assertRedirect();
+        $this->actingAs($m)->post('/complaints/'.$c->id, ['action' => 'publish', 'public_summary' => 'Redacted summary', 'redaction_confirmed' => 1])->assertRedirect();
         $this->assertDatabaseHas('audit_events', ['action' => 'complaint.publish']);
         $this->post('/providers/'.$this->org->id.'/review', ['status' => 'approved', 'verification_scope' => 'Reviewed'])->assertForbidden();
         $this->post('/transactions/'.$t->id.'/finance', ['commission_minor' => 100, 'variable_cost_minor' => 1, 'fitment_return' => false])->assertForbidden();

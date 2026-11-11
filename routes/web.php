@@ -3,6 +3,7 @@
 use App\Http\Controllers\CarCatalogController;
 use App\Http\Controllers\CarverseController as C;
 use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Controllers\ProviderFeedbackController;
 use App\Http\Controllers\SuperUserController;
 use App\Http\Middleware\RetiredWorkflow;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/shares/{share}', [C::class, 'revoke']);
     Route::post('/providers/{organization}/logo', [C::class, 'updateProviderLogo']);
     Route::post('/providers/apply', [C::class, 'apply'])->middleware('throttle:5,10');
+    Route::post('/providers/{organization}/reviews/{review}/moderate', [ProviderFeedbackController::class, 'review']);
+    Route::post('/providers/{organization}/cases/{complaint}/moderate', [ProviderFeedbackController::class, 'caseReview']);
+    Route::post('/providers/{organization}/cases/{complaint}/decision', [ProviderFeedbackController::class, 'caseDecision']);
+    Route::post('/providers/{organization}/cases/{complaint}/publication', [ProviderFeedbackController::class, 'casePublication']);
     Route::post('/providers/{organization}/review', [C::class, 'approve']);
     Route::post('/parts', [C::class, 'part']);
     Route::put('/parts/{part}', [C::class, 'part']);

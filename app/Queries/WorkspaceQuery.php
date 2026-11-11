@@ -72,14 +72,14 @@ class WorkspaceQuery
 
     public function providers(): Collection
     {
-        $ratings = Review::query()->join('transactions', 'transactions.id', '=', 'reviews.transaction_id')->selectRaw('transactions.organization_id, COUNT(*) as review_count, AVG(quality) as quality, AVG(communication) as communication, AVG(timeliness) as timeliness, AVG(value) as value')->groupBy('transactions.organization_id')->get()->keyBy('organization_id');
-        $reviews = Review::with('transaction:id,organization_id')->latest()->limit(100)->get()->groupBy(fn ($review) => $review->transaction->organization_id);
+        $ratings = Review::query()->join('transactions', 'transactions.id', '=', 'reviews.transaction_id')->where('reviews.moderation_status', 'approved')->where('transactions.status', 'completed')->whereColumn('reviews.user_id', 'transactions.user_id')->selectRaw('transactions.organization_id, COUNT(*) as review_count, AVG(quality) as quality, AVG(communication) as communication, AVG(timeliness) as timeliness, AVG(value) as value')->groupBy('transactions.organization_id')->get()->keyBy('organization_id');
+        $reviews = Review::with('transaction:id,organization_id')->where('moderation_status', 'approved')->whereHas('transaction', fn ($q) => $q->where('status', 'completed')->whereColumn('user_id', 'reviews.user_id'))->latest()->limit(100)->get()->groupBy(fn ($review) => $review->transaction->organization_id);
 
         return Organization::where('status', 'approved')->get()->map(function ($o) use ($ratings, $reviews) {
             $rating = $ratings->get($o->id);
             $o->review_count = (int) ($rating?->review_count ?? 0);
             $o->ratings = collect(['quality', 'communication', 'timeliness', 'value'])->mapWithKeys(fn ($k) => [$k => $rating?->{$k} === null ? null : (float) $rating->{$k}]);
-            $o->public_reviews = $reviews->get($o->id, collect())->take(5)->map(fn ($review) => $review->only('quality', 'communication', 'timeliness', 'value', 'body', 'response'))->values();
+            $o->public_reviews = $reviews->get($o->id, collect())->take(5)->map(fn ($review) => [...$review->only('quality', 'communication', 'timeliness', 'value', 'body'), 'response' => $review->response_status === 'approved' ? $review->response : null])->values();
 
             return $o;
         });

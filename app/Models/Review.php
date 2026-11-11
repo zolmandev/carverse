@@ -11,9 +11,21 @@ class Review extends Model
 
     protected $guarded = [];
 
+    protected $hidden = ['moderation_note', 'reviewed_by', 'public_approved_by'];
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
     protected function casts(): array
     {
-        return [];
+        return ['reviewed_at' => 'datetime', 'public_approved_at' => 'datetime'];
     }
 
     public function transaction()

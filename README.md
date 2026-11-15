@@ -121,7 +121,7 @@ Registration uses Laravel session authentication plus a six-digit SMS code sent 
 
 The public, read-only mobile API is documented in [`docs/MOBILE_API.md`](docs/MOBILE_API.md). It exposes versioned JSON endpoints for leaderboard results, upcoming events, articles, car features, approved garages and approved skilled mechanics.
 
-Automated GitHub Actions deployment to cPanel is documented in [`docs/CPANEL_DEPLOYMENT.md`](docs/CPANEL_DEPLOYMENT.md). The workflow builds on pushes to `main`, preserves the server `.env`, SQLite database and `storage`, uploads over SSH/rsync, and runs migrations and Laravel caches remotely.
+Automated GitHub Actions deployment to cPanel is documented in [`docs/CPANEL_DEPLOYMENT.md`](docs/CPANEL_DEPLOYMENT.md). The workflow builds on pushes to `main`, preserves the server `.env`, database state and `storage`, uploads over SSH/rsync, and runs migrations and Laravel caches remotely.
 
 - **Garage:** multiple vehicles, imported frame/chassis identifiers, encrypted identifiers at rest, private vehicle photos, active vehicle selection and dated odometer readings. Registration numbers are not collected.
 - **Parts:** approved supplier listings, reference/category search, OEM references, conditions, stock, optional prices and photos, quote-only listings, supplier editing, four fitment states. A fitment assessment records assessor, time, evidence, relevant vehicle/part snapshots and fingerprints. Changes to identifying vehicle details or part specifications invalidate the current badge. Stock or price changes do not invalidate technical fitment.

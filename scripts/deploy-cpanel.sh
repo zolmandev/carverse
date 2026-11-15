@@ -17,8 +17,13 @@ fi
 "$COMPOSER_BIN" install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
 
 mkdir -p database storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
-touch database/database.sqlite
-chmod 660 database/database.sqlite
+
+DB_CONNECTION="$($PHP_BIN -r '$e=parse_ini_file(".env", false, INI_SCANNER_RAW); echo $e["DB_CONNECTION"] ?? "sqlite";')"
+if [[ "$DB_CONNECTION" == "sqlite" ]]; then
+    touch database/database.sqlite
+    chmod 660 database/database.sqlite
+fi
+
 chmod -R ug+rwX database storage bootstrap/cache
 
 if ! grep -Eq '^APP_KEY=.+$' .env; then

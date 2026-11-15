@@ -1,6 +1,6 @@
 # Automated Carverse cPanel deployment
 
-Carverse deploys pushes to `main` through GitHub Actions. GitHub builds the Vite assets, uploads the release over SSH/rsync, preserves the server-owned `.env`, SQLite database and `storage`, and runs the Laravel deployment script.
+Carverse deploys pushes to `main` through GitHub Actions. GitHub builds the Vite assets, uploads the release over SSH/rsync, preserves the server-owned `.env`, optional SQLite database and `storage`, and runs the Laravel deployment script.
 
 ## Target
 
@@ -15,7 +15,7 @@ Carverse deploys pushes to `main` through GitHub Actions. GitHub builds the Vite
 - PHP 8.3 or newer
 - Composer 2
 - `rsync`
-- PHP extensions `pdo_sqlite` and `sqlite3`
+- The PHP PDO extension for the selected database (`pdo_mysql` or `pdo_sqlite`)
 - Domain or subdomain whose document root points to the application's `public` directory
 
 ## GitHub environment secrets
@@ -51,9 +51,12 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://YOUR-CARVERSE-DOMAIN
 
-DB_CONNECTION=sqlite
-DB_DATABASE=/home/theajase/carverse/database/database.sqlite
-DB_FOREIGN_KEYS=true
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=CPANEL_DATABASE_NAME
+DB_USERNAME=CPANEL_DATABASE_USER
+DB_PASSWORD=YOUR_DATABASE_PASSWORD
 
 SESSION_DRIVER=database
 CACHE_STORE=database
@@ -82,7 +85,7 @@ Do not run `DatabaseSeeder` in production; it deliberately refuses production de
 
 ## First deployment
 
-Once the cPanel key, domain document root, `.env`, and GitHub secrets are ready, run **Actions → Deploy to cPanel → Run workflow**. The deployment creates `database/database.sqlite` when absent and preserves it on later uploads. Later pushes to `main` deploy automatically.
+Once the cPanel key, domain document root, `.env`, and GitHub secrets are ready, run **Actions → Deploy to cPanel → Run workflow**. Later pushes to `main` deploy automatically. If `DB_CONNECTION=sqlite` is selected instead, the deployment creates `database/database.sqlite` when absent and preserves it on later uploads.
 
 Verify:
 
@@ -92,4 +95,4 @@ Verify:
 - `/api/v1/events`
 - profile image upload and authenticated mobile API login
 
-Back up `/home/theajase/carverse/database/database.sqlite` before deploying migrations that remove or transform production data.
+Back up the configured production database before deploying migrations that remove or transform production data.

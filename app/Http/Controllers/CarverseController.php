@@ -79,6 +79,13 @@ class CarverseController extends Controller
         return Inertia::render('carverse/directory', ['providers' => app(WorkspaceQuery::class)->providers(), 'summaries' => Complaint::where('moderation_status', 'approved')->whereIn('status', ['resolved', 'dismissed'])->whereNotNull('public_approved_at')->whereNotNull('public_summary')->get(['public_summary', 'updated_at'])]);
     }
 
+    public function publicCommunities()
+    {
+        return Inertia::render('carverse/communities', [
+            'communities' => Community::with(['brand:id,name', 'carModel:id,name', 'trim:id,name'])->orderBy('name')->get(),
+        ]);
+    }
+
     public function providerDetail(Organization $organization)
     {
         abort_unless($organization->status === 'approved', 404);

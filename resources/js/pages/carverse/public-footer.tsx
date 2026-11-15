@@ -18,6 +18,7 @@ export default function PublicFooter() {
                     <Link href="/events">Events</Link>
                     <Link href="/blog">Journal</Link>
                     <Link href="/directory">Specialists</Link>
+                    <Link href="/communities">Communities</Link>
                     <Link href="/terms">Terms</Link>
                     <Link href="/privacy">Privacy</Link>
                     <Link href="/community-guidelines">Guidelines</Link>

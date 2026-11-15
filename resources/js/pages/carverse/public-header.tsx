@@ -121,6 +121,7 @@ export default function PublicHeader() {
                             [
                                 ['/features', 'Car features'],
                                 ['/directory', 'Specialists'],
+                                ['/communities', 'Communities'],
                                 ['/blog', 'Blog'],
                                 ['/events', 'Events'],
                             ] as const
@@ -208,6 +209,9 @@ export default function PublicHeader() {
                     </Link>
                     <Link href="/directory" className={navClass('/directory')} aria-current={isActive('/directory') ? 'page' : undefined}>
                         Specialists
+                    </Link>
+                    <Link href="/communities" className={navClass('/communities')} aria-current={isActive('/communities') ? 'page' : undefined}>
+                        Communities
                     </Link>
                     <Link href="/blog" className={navClass('/blog')} aria-current={isActive('/blog') ? 'page' : undefined}>
                         Blog

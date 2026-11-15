@@ -24,6 +24,7 @@ Route::get('/blog/{slug}/image', [BlogController::class, 'image'])->middleware('
 Route::get('/blog/{slug}', [BlogController::class, 'show']);
 Route::get('/directory', [C::class, 'publicDirectory']);
 Route::get('/directory/{organization}', [C::class, 'providerDetail'])->whereNumber('organization');
+Route::get('/communities', [C::class, 'publicCommunities']);
 Route::get('/profile/{user}', [ProfileController::class, 'show'])->whereNumber('user');
 Route::get('/terms', [LegalController::class, 'show'])->defaults('page', 'terms');
 Route::get('/privacy', [LegalController::class, 'show'])->defaults('page', 'privacy');

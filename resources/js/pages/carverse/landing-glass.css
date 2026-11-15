@@ -28,7 +28,7 @@
     font-weight: 600;
 }
 .cv-landing-glass .cv-public-nav > .cv-link:hover {
-    color: #b9252b;
+    color: #9d1a1f;
 }
 .cv-landing-glass .cv-landing-events,
 .cv-landing-glass .cv-card {
@@ -102,10 +102,10 @@
     letter-spacing: 1.3px;
 }
 .cv-landing-glass .cv-button {
-    border: 1px solid #d32f2f;
-    background: linear-gradient(135deg, #e23c40, #c5262c);
+    border: 1px solid #9d1a1f;
+    background: linear-gradient(135deg, #b82b30, #9d1a1f);
     box-shadow:
-        0 5px 14px #d32f2f1a,
+        0 5px 14px #9d1a1f1a,
         inset 0 1px 0 #ffffff20;
     border-radius: 11px;
     transition:
@@ -113,8 +113,8 @@
         box-shadow 150ms ease;
 }
 .cv-landing-glass .cv-button:hover {
-    background: #b9252b;
-    box-shadow: 0 7px 18px #d32f2f26;
+    background: #9d1a1f;
+    box-shadow: 0 7px 18px #9d1a1f26;
 }
 .cv-landing-glass .cv-button.light {
     color: #303a48;
@@ -147,8 +147,8 @@
     border: 1px solid #ffffffd9;
 }
 .cv-landing-glass .cv-race-distance-tabs button.selected {
-    background: linear-gradient(135deg, #dd383d, #c5262c);
-    box-shadow: 0 3px 9px #d32f2f26;
+    background: linear-gradient(135deg, #b82b30, #9d1a1f);
+    box-shadow: 0 3px 9px #9d1a1f26;
 }
 .cv-landing-glass .cv-field select {
     background: #ffffffbf;
@@ -191,7 +191,7 @@
 .cv-landing-glass a:focus-visible,
 .cv-landing-glass button:focus-visible,
 .cv-landing-glass select:focus-visible {
-    outline: 2px solid #c5262c;
+    outline: 2px solid #9d1a1f;
     outline-offset: 4px;
 }
 @supports (backdrop-filter: blur(16px)) {
@@ -312,7 +312,7 @@
 }
 .cv-directory-provider-cta .cv-provider-join-actions .cv-button {
     color: #fff;
-    background: #d32f2f;
+        background: #9d1a1f;
 }
 @media (max-width: 900px) {
     .cv-provider-join {
@@ -441,7 +441,7 @@
     margin: 4px 0 6px;
 }
 .cv-sidebar-blog-item:hover h3 {
-    color: #b9252b;
+    color: #9d1a1f;
 }
 .cv-sidebar-blog-item small {
     font-size: 10px;

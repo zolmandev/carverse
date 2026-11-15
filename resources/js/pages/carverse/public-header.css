@@ -23,10 +23,10 @@
     text-transform: uppercase;
 }
 .cv-global-header .cv-link:hover {
-    color: #b9252b;
+    color: #9d1a1f;
 }
 .cv-global-header .cv-link.active {
-    color: #b9252b;
+    color: #9d1a1f;
     font-weight: 700;
 }
 .cv-account-menu {
@@ -48,7 +48,7 @@
     cursor: pointer;
 }
 .cv-account-trigger:hover {
-    color: #b9252b;
+    color: #9d1a1f;
 }
 .cv-account-name {
     max-width: 130px;
@@ -66,7 +66,7 @@
     border: 2px solid #fff;
     border-radius: 50%;
     background: #fff0f0;
-    color: #c52c2c;
+    color: #9d1a1f;
     font-size: 13px;
     font-weight: 800;
     box-shadow: 0 3px 10px #26334d1a;
@@ -107,7 +107,7 @@
 .cv-account-dropdown a:hover,
 .cv-account-dropdown button:hover {
     background: #fff0f0;
-    color: #b9252b;
+    color: #9d1a1f;
 }
 .dark .cv-account-dropdown {
     border-color: #ffffff1f;
@@ -317,7 +317,7 @@
         text-decoration: none;
     }
     .cv-mobile-bottom-nav a[aria-current] {
-        color: #c5262c;
+        color: #9d1a1f;
     }
     .cv-bottom-nav-avatar {
         width: 22px;
@@ -428,7 +428,7 @@
 .cv-mobile-menu-footer > a:hover,
 .cv-mobile-menu-footer > button:hover {
     background: #fff0f0;
-    color: #b9252b;
+    color: #9d1a1f;
 }
 .cv-mobile-menu-footer {
     margin-top: auto;
@@ -485,11 +485,11 @@
 .cv-mobile-account-links a:hover,
 .cv-mobile-account-links button:hover {
     background: #fff0f0;
-    color: #b9252b;
+    color: #9d1a1f;
 }
 .cv-mobile-menu-footer > .cv-button {
     justify-content: center;
-    background: #d32f2f;
+    background: #9d1a1f;
     color: #fff;
 }
 .dark .cv-mobile-menu-panel {

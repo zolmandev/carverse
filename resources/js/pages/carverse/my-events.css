@@ -4,7 +4,7 @@
 .cv-my-events-heading p:last-child { margin: 0; color: var(--cv-muted); }
 .cv-my-events-filters { display: flex; gap: 8px; overflow-x: auto; padding: 0 0 18px; margin-bottom: 6px; }
 .cv-my-events-filters a { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; padding: 10px 14px; border: 1px solid #dce1e9; border-radius: 999px; color: inherit; text-decoration: none; font-size: 12px; font-weight: 700; }
-.cv-my-events-filters a.active { background: #d32f2f; border-color: #d32f2f; color: #fff; }
+.cv-my-events-filters a.active { background: #9d1a1f; border-color: #9d1a1f; color: #fff; }
 .cv-my-events-filters span { opacity: .7; }
 .cv-my-events-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .cv-my-event-card { overflow: hidden; border: 1px solid #e1e4e9; border-radius: 20px; background: #fff; color: #22272d; box-shadow: 0 10px 26px #20262d0b; }

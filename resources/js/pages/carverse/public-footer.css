@@ -31,7 +31,7 @@
     flex: 0 0 auto;
 }
 .cv-global-footer-logo span {
-    color: #d32f2f;
+    color: #9d1a1f;
     font-size: 10px;
     letter-spacing: 0;
 }
@@ -52,7 +52,7 @@
     text-decoration: none;
 }
 .cv-global-footer nav a:hover {
-    color: #c5262c;
+    color: #9d1a1f;
 }
 .cv-global-footer small {
     justify-self: end;

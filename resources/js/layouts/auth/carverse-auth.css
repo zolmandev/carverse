@@ -1,11 +1,11 @@
 .cv-auth {
-    --primary: #d32f2f;
+    --primary: #9d1a1f;
     --primary-foreground: #fff;
     --background: #fff;
     --foreground: #20262d;
     --input: #dfe3e8;
     --border: #dfe3e8;
-    --ring: #d32f2f;
+    --ring: #9d1a1f;
     --muted-foreground: #68717e;
     --secondary: #f3f4f6;
     --secondary-foreground: #20262d;
@@ -41,10 +41,10 @@
     height: 40px;
     border-radius: 12px;
     color: #fff;
-    background: #d32f2f;
+    background: #9d1a1f;
 }
 .cv-auth-ke {
-    color: #d32f2f;
+    color: #9d1a1f;
     background: #fff0f0;
     font-size: 11px;
     font-weight: 600;
@@ -210,7 +210,7 @@
     font-weight: 600;
 }
 .cv-auth-form-inner a {
-    color: #c02626;
+    color: #9d1a1f;
     text-decoration: none;
 }
 .cv-auth-form-inner a:hover {
@@ -218,18 +218,18 @@
 }
 .cv-auth-form-inner button[type='submit'] {
     min-height: 46px;
-    background: #d32f2f;
+    background: #9d1a1f;
     color: white;
     border-radius: 9px;
     font-weight: 600;
-    box-shadow: 0 4px 10px #d32f2f14;
+    box-shadow: 0 4px 10px #9d1a1f14;
 }
 .cv-auth-form-inner button[type='submit']:hover {
-    background: #b82525;
+    background: #9d1a1f;
 }
 .cv-auth a:focus-visible,
 .cv-auth button:focus-visible {
-    outline: 2px solid #d32f2f;
+    outline: 2px solid #9d1a1f;
     outline-offset: 4px;
 }
 .cv-auth-help {

@@ -1,5 +1,5 @@
 :root {
-    --cv-red: #d32f2f;
+    --cv-red: #9d1a1f;
     --cv-ink: #20262d;
     --cv-muted: #737b83;
     --cv-border: #e7e9ec;
@@ -123,11 +123,11 @@
     transition: transform .2s ease;
 }
 .cv-theme-switcher.is-on {
-    border-color: #c52c2c;
-    color: #b9252b;
+    border-color: #9d1a1f;
+    color: #9d1a1f;
 }
 .cv-theme-switcher.is-on .cv-theme-switcher-track {
-    background: #c52c2c;
+    background: #9d1a1f;
 }
 .cv-theme-switcher.is-on .cv-theme-switcher-thumb {
     transform: translateX(12px);
@@ -147,7 +147,7 @@
 .cv-app select:focus-visible,
 .cv-app textarea:focus-visible,
 .cv-public a:focus-visible {
-    outline: 3px solid #d32f2f77;
+    outline: 3px solid #9d1a1f77;
     outline-offset: 3px;
 }
 .cv-sidebar {
@@ -211,7 +211,7 @@
 }
 .cv-sidebar nav a.selected {
     background: #fff0f0;
-    color: #c52c2c;
+    color: #9d1a1f;
     font-weight: 700;
 }
 .cv-sidebar nav a:hover,
@@ -220,7 +220,7 @@
 }
 .cv-count {
     font-size: 10px;
-    background: #d32f2f;
+    background: #9d1a1f;
     color: white;
     border-radius: 5px;
     padding: 0 6px;
@@ -683,7 +683,7 @@
     transition: border-color 0.2s;
 }
 .cv-quick-card:hover {
-    border-color: #d32f2f66;
+    border-color: #9d1a1f66;
 }
 .cv-quick-card h3 {
     font-size: 13px;
@@ -1573,7 +1573,7 @@
 .cv-catalog-tabs a.active {
     background: #fff0f0;
     border-color: #eac4c4;
-    color: #c52c2c;
+    color: #9d1a1f;
     font-weight: 700;
 }
 .cv-catalog-attribution {
@@ -1879,7 +1879,7 @@
     display: grid;
     place-items: center;
     background: #fff0f0;
-    color: #d32f2f;
+    color: #9d1a1f;
     width: 44px;
     height: 44px;
     border-radius: 12px;
@@ -1911,7 +1911,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #c02626;
+    color: #9d1a1f;
 }
 .cv-event-preview-date strong {
     font-size: 21px;
@@ -1932,7 +1932,7 @@
     text-decoration: none;
 }
 .cv-event-preview-list h3 a:hover {
-    color: #d32f2f;
+    color: #9d1a1f;
 }
 .cv-event-preview-list p {
     display: flex;
@@ -2023,7 +2023,7 @@
     color: #6d7480;
 }
 .cv-race-distance-tabs button.selected {
-    background: #d32f2f;
+    background: #9d1a1f;
     color: white;
 }
 .cv-race-preview-list {
@@ -2043,7 +2043,7 @@
     flex-shrink: 0;
     font-size: 12px;
     font-weight: 700;
-    color: #d32f2f;
+    color: #9d1a1f;
 }
 .cv-race-preview-list li > div {
     min-width: 0;
@@ -2145,7 +2145,7 @@
     overflow: hidden;
     font-variant-numeric: tabular-nums;
 }
-.cv-event-banner-date-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 54px; padding: 7px 10px; background: #d32f2f; color: #fff; }
+.cv-event-banner-date-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 54px; padding: 7px 10px; background: #9d1a1f; color: #fff; }
 .cv-event-banner-date-day strong { font-size: 24px; line-height: 1; }
 .cv-event-banner-date-copy { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 8px 13px; }
 .cv-event-banner-date-copy strong { font-size: 12px; line-height: 1.2; white-space: nowrap; }
@@ -2170,7 +2170,7 @@
     padding: 6px;
     border: 1px solid #ffadb566;
     border-radius: 10px;
-    background: #d32f2f33;
+    background: #9d1a1f33;
     color: #ff9fa8;
 }
 .cv-event-banner-location span {

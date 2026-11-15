@@ -4,6 +4,15 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <script>
+            (() => {
+                let preference = 'system';
+                try { preference = localStorage.getItem('appearance') || 'system'; } catch {}
+                const dark = preference === 'dark' || (preference !== 'light' && preference !== 'dark' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.toggle('dark', dark);
+                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+            })();
+        </script>
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">

@@ -1,11 +1,17 @@
+import ThemeSwitcher from '@/components/theme-switcher';
 import { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Car, ExternalLink, Flag, LogOut, ShieldCheck, Users } from 'lucide-react';
+import { CalendarDays, Car, ExternalLink, Flag, LogOut, ShieldCheck, Users } from 'lucide-react';
 import { useState } from 'react';
+import type { BlogPost } from './blog';
+import BlogManagement from './blog-management';
 import CarCatalog, { Brand, BrandMark, CarSelectFields, Catalog, CatalogAttribution, Model, Trim } from './car-catalog';
+import EventApprovals from './event-approvals';
+import { EventApplications } from './event-types';
 import ProviderApprovals, { Applications } from './provider-approvals';
 import { Paginated } from './types';
 import { ActionForm, Badge, Card, date, Details, Empty, Field, Pager } from './ui';
+import UserManagement, { type UsersData } from './user-management';
 import './workspace.css';
 type Group = {
     id: number;
@@ -20,6 +26,7 @@ type Group = {
     trim: Trim | null;
 };
 type Run = {
+    is_demo: boolean;
     id: number;
     driver: string;
     vehicle: string;
@@ -34,7 +41,10 @@ type Run = {
     reviewer: { name: string } | null;
 };
 interface Props {
-    tab: 'groups' | 'racing' | 'cars' | 'approvals';
+    tab: 'groups' | 'racing' | 'cars' | 'approvals' | 'events' | 'blog' | 'users';
+    users: UsersData | null;
+    blogPosts: Paginated<BlogPost> | null;
+    eventApplications: EventApplications | null;
     applications: Applications | null;
     carBrands: Brand[];
     catalog: Catalog | null;
@@ -42,7 +52,7 @@ interface Props {
     entries: Paginated<Run>;
     leaderboard: Run[];
     events: string[];
-    filters: { q?: string; event?: string; distance?: string; provider_status?: string; provider_kind?: string };
+    filters: { content?: string; q?: string; event?: string; distance?: string; provider_status?: string; provider_kind?: string; user_role?: string };
     flash: { message?: string };
 }
 function GroupFields({ group, brands }: { group?: Group; brands: Brand[] }) {
@@ -64,13 +74,24 @@ export default function SuperUser(p: Props) {
     const racing = p.tab === 'racing';
     const cars = p.tab === 'cars';
     const approvals = p.tab === 'approvals';
-    const pageTitle = approvals
-        ? 'Garage & mechanic approvals'
-        : cars
-          ? 'Cars management'
-          : racing
-            ? 'Drag Racing Leaderboards'
-            : 'WhatsApp group links';
+    const eventApprovals = p.tab === 'events';
+    const blog = p.tab === 'blog';
+    const userManagement = p.tab === 'users';
+    const pageTitle = userManagement
+        ? 'User management'
+        : blog
+        ? p.filters.content === 'features'
+            ? 'Car features'
+            : 'Blog'
+        : eventApprovals
+          ? 'Event approvals'
+          : approvals
+            ? 'Garage & mechanic approvals'
+            : cars
+              ? 'Cars management'
+              : racing
+                ? 'Drag Racing Leaderboards'
+                : 'WhatsApp group links';
     const [editingGroupId, setEditingGroupId] = useState<number>();
     const editingGroup = p.groups.data.find((group) => group.id === editingGroupId);
     return (
@@ -78,9 +99,6 @@ export default function SuperUser(p: Props) {
             <Head title={pageTitle} />
             <aside className="cv-sidebar cv-super-sidebar">
                 <Link href="/app/admin" className="cv-logo">
-                    <span className="cv-logo-mark">
-                        <Car size={23} />
-                    </span>
                     carverse<span className="cv-ke">KE</span>
                 </Link>
                 <span className="cv-pilot">SUPER USER</span>
@@ -97,9 +115,25 @@ export default function SuperUser(p: Props) {
                         <ShieldCheck size={19} />
                         Provider approvals
                     </Link>
+                    <Link href="/app/admin?tab=blog&content=features" className={blog && p.filters.content === 'features' ? 'selected' : ''}>
+                        <Car size={19} />
+                        Car features
+                    </Link>
+                    <Link href="/app/admin?tab=blog" className={blog && p.filters.content !== 'features' ? 'selected' : ''}>
+                        <CalendarDays size={19} />
+                        Blog
+                    </Link>
+                    <Link href="/app/admin?tab=events" className={eventApprovals ? 'selected' : ''}>
+                        <CalendarDays size={19} />
+                        Event approvals
+                    </Link>
                     <Link href="/app/admin?tab=racing" className={racing ? 'selected' : ''}>
                         <Flag size={19} />
                         Drag racing leaderboards
+                    </Link>
+                    <Link href="/app/admin?tab=users" className={userManagement ? 'selected' : ''}>
+                        <Users size={19} />
+                        User management
                     </Link>
                 </nav>
                 <div className="cv-sidebar-bottom">
@@ -118,6 +152,7 @@ export default function SuperUser(p: Props) {
             <div className="cv-main">
                 <header className="cv-topbar">
                     <span className="cv-eyebrow">CARVERSE KE / SUPER USER</span>
+                    <ThemeSwitcher />
                     <button className="cv-link" onClick={() => router.post('/logout')}>
                         Sign out <LogOut size={15} />
                     </button>
@@ -126,23 +161,35 @@ export default function SuperUser(p: Props) {
                     <div className="cv-page-heading">
                         <div>
                             <p className="cv-eyebrow">
-                                {approvals
-                                    ? 'PROVIDER APPLICATIONS'
-                                    : cars
-                                      ? 'VEHICLE CATALOG'
-                                      : racing
-                                        ? 'GPS & SLIP VERIFIED'
-                                        : 'COMMUNITY MANAGEMENT'}
+                                {userManagement
+                                    ? 'ACCOUNT MANAGEMENT'
+                                    : blog
+                                    ? 'Write and publish stories for the Carverse community.'
+                                    : eventApprovals
+                                      ? 'EVENT SUBMISSIONS'
+                                      : approvals
+                                        ? 'PROVIDER APPLICATIONS'
+                                        : cars
+                                          ? 'VEHICLE CATALOG'
+                                          : racing
+                                            ? 'GPS & SLIP VERIFIED'
+                                            : 'COMMUNITY MANAGEMENT'}
                             </p>
                             <h1>{pageTitle}</h1>
                             <p>
-                                {approvals
-                                    ? 'Review new garages and skilled mechanics before they join the directory.'
-                                    : cars
-                                      ? 'Manage brands, models, trims and brand logos.'
-                                      : racing
-                                        ? 'Manage recorded runs and review GPS evidence and timing slips.'
-                                        : 'Add, edit, and remove the group links shown to your community.'}
+                                {userManagement
+                                    ? 'Find accounts, review their access and manage roles.'
+                                    : blog
+                                    ? 'Write and publish stories for the Carverse community.'
+                                    : eventApprovals
+                                      ? 'Review submitted events before they appear in the event listings.'
+                                      : approvals
+                                        ? 'Review new garages and skilled mechanics before they join the directory.'
+                                        : cars
+                                          ? 'Manage brands, models, trims and brand logos.'
+                                          : racing
+                                            ? 'Manage recorded runs and review GPS evidence and timing slips.'
+                                            : 'Add, edit, and remove the group links shown to your community.'}
                             </p>
                         </div>
                     </div>
@@ -151,7 +198,17 @@ export default function SuperUser(p: Props) {
                             {p.flash.message}
                         </div>
                     )}
-                    {approvals && p.applications ? (
+                    {userManagement && p.users ? (
+                        <UserManagement data={p.users} filters={p.filters} currentUserId={auth.user.id} />
+                    ) : blog && p.blogPosts ? (
+                        <BlogManagement key={p.filters.content || 'blog'} posts={p.blogPosts} featureMode={p.filters.content === 'features'} />
+                    ) : eventApprovals && p.eventApplications ? (
+                        <EventApprovals
+                            key={`${p.eventApplications.status}-${p.filters.q}`}
+                            applications={p.eventApplications}
+                            search={p.filters.q}
+                        />
+                    ) : approvals && p.applications ? (
                         <ProviderApprovals
                             key={`${p.applications.status}-${p.filters.provider_kind}-${p.filters.q}`}
                             applications={p.applications}
@@ -303,8 +360,9 @@ export default function SuperUser(p: Props) {
                                         name="distance_metres"
                                         label="Race distance"
                                         options={[
-                                            { value: '201', label: '201 metres' },
-                                            { value: '402', label: '402 metres' },
+                                            { value: '201', label: '⅛ mile (201 m)' },
+                                            { value: '402', label: '¼ mile (402 m)' },
+                                            { value: '805', label: '½ mile (805 m)' },
                                         ]}
                                     />
                                     <Field
@@ -334,8 +392,9 @@ export default function SuperUser(p: Props) {
                                         value={p.filters.distance ?? ''}
                                         required={false}
                                         options={[
-                                            { value: '201', label: '201 metres' },
-                                            { value: '402', label: '402 metres' },
+                                            { value: '201', label: '⅛ mile (201 m)' },
+                                            { value: '402', label: '¼ mile (402 m)' },
+                                            { value: '805', label: '½ mile (805 m)' },
                                         ]}
                                     />
                                     <button className="cv-button">Show results</button>

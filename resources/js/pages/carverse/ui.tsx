@@ -5,6 +5,15 @@ export const money = (minor: number) =>
     new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(minor / 100);
 export const date = (value: string) =>
     new Date(value).toLocaleDateString('en-KE', { timeZone: 'Africa/Nairobi', day: 'numeric', month: 'short', year: 'numeric' });
+export const dateTime = (value: string) =>
+    new Date(value).toLocaleString('en-KE', {
+        timeZone: 'Africa/Nairobi',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
 export function Badge({ children, tone = 'neutral' }: { children: ReactNode; tone?: string }) {
     return <span className={`cv-badge ${tone}`}>{children}</span>;
 }
@@ -52,7 +61,7 @@ export function Field({
                     step={name === 'elapsed_seconds' ? '0.001' : name.includes('kes') ? '0.01' : undefined}
                     accept={
                         type === 'file'
-                            ? name === 'photo' || name === 'logo'
+                            ? name === 'photo' || name === 'logo' || name === 'poster' || name === 'featured_image'
                                 ? '.jpg,.jpeg,.png,.webp'
                                 : name === 'gps'
                                   ? '.gpx,.json,.csv,.pdf,.jpg,.jpeg,.png'
@@ -98,7 +107,23 @@ export function ActionForm({
         }
         if (method) data.set('_method', method);
         setBusy(true);
-        router.post(action, data, { preserveScroll: true, onError: setErrors, onSuccess: () => setErrors({}), onFinish: () => setBusy(false) });
+        router.post(action, data, {
+            preserveScroll: true,
+            forceFormData: true,
+            onError: (validationErrors) => {
+                setErrors(validationErrors);
+                window.dispatchEvent(
+                    new CustomEvent('cv:toast', {
+                        detail: { type: 'error', message: Object.values(validationErrors)[0] ?? 'Please check the form and try again.' },
+                    }),
+                );
+            },
+            onSuccess: () => {
+                setErrors({});
+                window.dispatchEvent(new CustomEvent('cv:toast', { detail: { type: 'success', message: 'Saved successfully.' } }));
+            },
+            onFinish: () => setBusy(false),
+        });
     }
     return (
         <form onSubmit={submit} className={`cv-form ${wide ? 'wide' : ''}`}>

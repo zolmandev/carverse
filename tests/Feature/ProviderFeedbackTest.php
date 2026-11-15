@@ -83,6 +83,31 @@ class ProviderFeedbackTest extends TestCase
         $this->get('/app/admin?tab=approvals&provider_status=approved&provider_id='.$this->garage->id.'&feedback=cases')->assertOk()->assertInertia(fn (Assert $p) => $p->has('applications.feedback.reviews.data', 1)->has('applications.feedback.cases.data', 1)->where('applications.feedback.provider.id', $this->garage->id)->missing('applications.feedback.cases.data.0.attachments.0.path'));
     }
 
+    public function test_public_provider_page_only_shows_published_feedback(): void
+    {
+        $url = '/directory/'.$this->garage->id;
+        $this->get($url)->assertInertia(fn (Assert $p) => $p->component('carverse/provider-detail')->has('reviews.data', 0)->has('summaries.data', 0));
+
+        $this->admin();
+        $this->approveReview();
+        $this->approveCase();
+        $this->post($this->base().'/cases/'.$this->case->id.'/decision', ['status' => 'resolved', 'decision' => 'Private decision.'])->assertSessionHasNoErrors();
+        $this->post($this->base().'/cases/'.$this->case->id.'/publication', ['action' => 'publish', 'public_summary' => 'Redacted public outcome.', 'reason' => 'Resolution reviewed', 'redaction_confirmed' => 1])->assertSessionHasNoErrors();
+
+        $this->get($url)->assertInertia(fn (Assert $p) => $p
+            ->has('reviews.data', 1)
+            ->where('reviews.data.0.body', 'Work needed a follow-up.')
+            ->missing('reviews.data.0.moderation_note')
+            ->has('summaries.data', 1)
+            ->where('summaries.data.0.public_summary', 'Redacted public outcome.')
+            ->missing('summaries.data.0.body')
+            ->missing('summaries.data.0.decision')
+            ->missing('summaries.data.0.attachments'));
+
+        $other = Organization::factory()->create(['status' => 'pending']);
+        $this->get('/directory/'.$other->id)->assertNotFound();
+    }
+
     public function test_only_approved_reviews_count_publicly_and_ratings_cannot_be_rewritten(): void
     {
         $this->get('/directory')->assertInertia(fn (Assert $p) => $p->where('providers.0.review_count', 0));

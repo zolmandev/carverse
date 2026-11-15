@@ -13,6 +13,7 @@ use App\Models\Complaint;
 use App\Models\DeletionRequest;
 use App\Models\Fitment;
 use App\Models\HistoryShare;
+use App\Models\MotoringEvent;
 use App\Models\Organization;
 use App\Models\Part;
 use App\Models\PaymentAttempt;
@@ -40,6 +41,13 @@ class CarverseController extends Controller
 {
     public function __construct(private WorkspacePolicy $policy, private Workflow $workflow) {}
 
+    public function providerApplicationPage(string $kind)
+    {
+        abort_unless(in_array($kind, ['garage', 'mechanic', 'supplier'], true), 404);
+
+        return Inertia::render('carverse/provider-application', ['kind' => $kind]);
+    }
+
     private function allow(bool $allowed): void
     {
         abort_unless($allowed, 403);
@@ -47,7 +55,10 @@ class CarverseController extends Controller
 
     public function index(Request $r, string $section = 'overview')
     {
-        if ($r->query('tab') === 'approvals') {
+        if ($section === 'admin') {
+            $this->allow($this->policy->admin($r->user()));
+        }
+        if (in_array($r->query('tab'), ['approvals', 'events', 'blog', 'users'])) {
             $this->allow($this->policy->admin($r->user()));
         }
         abort_if(in_array($section, ['requests', 'passport', 'reminders']) && ! config('carverse.legacy_workflows'), 404);
@@ -66,6 +77,35 @@ class CarverseController extends Controller
     public function publicDirectory()
     {
         return Inertia::render('carverse/directory', ['providers' => app(WorkspaceQuery::class)->providers(), 'summaries' => Complaint::where('moderation_status', 'approved')->whereIn('status', ['resolved', 'dismissed'])->whereNotNull('public_approved_at')->whereNotNull('public_summary')->get(['public_summary', 'updated_at'])]);
+    }
+
+    public function providerDetail(Organization $organization)
+    {
+        abort_unless($organization->status === 'approved', 404);
+
+        $provider = app(WorkspaceQuery::class)->providers()->firstWhere('id', $organization->id);
+        $reviews = Review::query()
+            ->join('transactions', 'transactions.id', '=', 'reviews.transaction_id')
+            ->where('transactions.organization_id', $organization->id)
+            ->where('transactions.status', 'completed')
+            ->whereColumn('reviews.user_id', 'transactions.user_id')
+            ->where('reviews.moderation_status', 'approved')
+            ->orderByDesc('reviews.created_at')
+            ->paginate(10, ['reviews.id', 'reviews.quality', 'reviews.communication', 'reviews.timeliness', 'reviews.value', 'reviews.body', 'reviews.response', 'reviews.response_status', 'reviews.created_at'], 'reviews_page')
+            ->withQueryString()
+            ->through(fn ($review) => [...$review->only('id', 'quality', 'communication', 'timeliness', 'value', 'body', 'created_at'), 'response' => $review->response_status === 'approved' ? $review->response : null]);
+        $summaries = Complaint::query()
+            ->join('transactions', 'transactions.id', '=', 'complaints.transaction_id')
+            ->where('transactions.organization_id', $organization->id)
+            ->where('complaints.moderation_status', 'approved')
+            ->whereIn('complaints.status', ['resolved', 'dismissed'])
+            ->whereNotNull('complaints.public_approved_at')
+            ->whereNotNull('complaints.public_summary')
+            ->orderByDesc('complaints.updated_at')
+            ->paginate(10, ['complaints.id', 'complaints.public_summary', 'complaints.updated_at'], 'cases_page')
+            ->withQueryString();
+
+        return Inertia::render('carverse/provider-detail', ['provider' => $provider, 'reviews' => $reviews, 'summaries' => $summaries]);
     }
 
     public function vehicle(VehicleRequest $r)
@@ -164,7 +204,7 @@ class CarverseController extends Controller
             }$payments->initiate($locked, $d['phone']);
         });
 
-        return back()->with('message', config('payments.driver') === 'demo' ? 'Demo payment recorded. No money was moved.' : 'Sandbox payment request sent. Payment is pending provider verification.');
+        return back()->with('message', config('payments.driver') === 'demo' ? 'Payment recorded. No money was moved.' : 'Sandbox payment request sent. Payment is pending provider verification.');
     }
 
     public function record(Request $r)
@@ -343,7 +383,7 @@ class CarverseController extends Controller
             }throw $e;
         }
 
-        return back()->with('message', 'Application submitted. Staff access and public listing start after approval.');
+        return redirect('/app/provider')->with('message', 'Application submitted. Staff access and public listing start after approval.');
     }
 
     public function providerLogo(Request $r, Organization $organization)
@@ -384,6 +424,9 @@ class CarverseController extends Controller
             }
             Workflow::audit('provider.reviewed', $provider, ['previous' => $provider->only('status', 'verification_scope', 'verified_at', 'review_note', 'reviewed_by', 'reviewed_at'), 'decision' => $d]);
             $provider->update(collect($d)->except('evidence_checked')->all() + ['verified_at' => $d['status'] === 'approved' ? now() : null, 'reviewed_at' => now(), 'reviewed_by' => $r->user()->id]);
+            if ($provider->kind === 'supplier') {
+                $provider->members()->get()->each(fn (User $member) => $this->syncSellerRole($member));
+            }
         });
 
         return back()->with('message', 'Application review saved. Only approved providers appear in the directory.');
@@ -430,7 +473,7 @@ class CarverseController extends Controller
     public function publish(Request $r, Article $article)
     {
         $this->allow($this->policy->admin($r->user()));
-        $article->update($r->validate(['status' => 'required|in:draft,published']) + ['published_at' => today()]);
+        $article->update($r->validate(['status' => 'required|in:draft,published']) + ['published_at' => $article->published_at ?? today('Africa/Nairobi')]);
         Workflow::audit('article.status', $article);
 
         return back();
@@ -525,6 +568,9 @@ class CarverseController extends Controller
         $d = $r->validate(['email' => 'required|email|exists:users,email']);
         $member = User::where('email', $d['email'])->firstOrFail();
         $organization->members()->syncWithoutDetaching([$member->id]);
+        if ($organization->kind === 'supplier' && $organization->status === 'approved') {
+            $this->syncSellerRole($member);
+        }
         Workflow::audit('organization.member_added', $organization, ['user_id' => $member->id]);
 
         return back();
@@ -533,12 +579,34 @@ class CarverseController extends Controller
     public function role(Request $r, User $user)
     {
         $this->allow($this->policy->admin($r->user()));
-        $d = $r->validate(['role' => 'required|in:owner,moderator,admin']);
+        $d = $r->validate(['role' => 'required|in:enthusiast,seller,admin']);
         abort_if($user->id === $r->user()->id && $d['role'] !== 'admin', 422, 'Ask another administrator to change your role.');
+        $approvedSeller = $user->organizations()->where('kind', 'supplier')->where('status', 'approved')->exists();
+        if ($d['role'] === 'seller' && ! $approvedSeller) {
+            throw ValidationException::withMessages(['role' => 'Seller access requires an approved parts supplier application.']);
+        }
+        if ($d['role'] === 'enthusiast' && $approvedSeller) {
+            throw ValidationException::withMessages(['role' => 'This account belongs to an approved parts supplier and must remain a Seller.']);
+        }
         Workflow::audit('user.role_changed', $user, ['from' => $user->role, 'to' => $d['role']]);
         $user->forceFill($d)->save();
 
         return back();
+    }
+
+    private function syncSellerRole(User $user): void
+    {
+        if ($user->role === 'admin') {
+            return;
+        }
+
+        $target = $user->organizations()->where('kind', 'supplier')->where('status', 'approved')->exists() ? 'seller' : 'enthusiast';
+        if ($user->role === $target) {
+            return;
+        }
+
+        Workflow::audit('user.role_changed', $user, ['from' => $user->role, 'to' => $target, 'reason' => 'supplier_approval']);
+        $user->forceFill(['role' => $target])->save();
     }
 
     public function cancelRequest(Request $r, ServiceRequest $serviceRequest)
@@ -569,7 +637,7 @@ class CarverseController extends Controller
         $u = $r->user();
 
         return response()->streamDownload(function () use ($u) {
-            echo json_encode(['profile' => $u->only('name', 'email', 'phone', 'location'), 'vehicles' => $u->vehicles, 'requests' => ServiceRequest::with('quotes', 'transaction')->where('user_id', $u->id)->get(), 'records' => ServiceRecord::with('revisions')->whereIn('vehicle_id', $u->vehicles()->pluck('id'))->get(), 'reviews' => Review::where('user_id', $u->id)->get(), 'complaints' => Complaint::where('user_id', $u->id)->get()], JSON_PRETTY_PRINT);
+            echo json_encode(['profile' => $u->only('name', 'email', 'phone', 'location'), 'vehicles' => $u->vehicles, 'requests' => ServiceRequest::with('quotes', 'transaction')->where('user_id', $u->id)->get(), 'records' => ServiceRecord::with('revisions')->whereIn('vehicle_id', $u->vehicles()->pluck('id'))->get(), 'reviews' => Review::where('user_id', $u->id)->get(), 'complaints' => Complaint::where('user_id', $u->id)->get(), 'events' => MotoringEvent::where('user_id', $u->id)->get()->makeVisible(['contact_email', 'contact_phone', 'evidence_name', 'review_note'])], JSON_PRETTY_PRINT);
         }, 'carverse-export.json', ['Content-Type' => 'application/json']);
     }
 }

@@ -49,11 +49,11 @@ class Workflow
             };
             abort_unless(in_array($next, $allowed), 422, 'This status transition is not permitted.');
             if (in_array($next, ['in_progress', 'awaiting_confirmation'])) {
-                abort_unless($provider || ($t->status === 'disputed' && in_array($actor->role, ['admin', 'moderator'])), 403);
+                abort_unless($provider || ($t->status === 'disputed' && $actor->role === 'admin'), 403);
             } elseif ($next === 'completed') {
                 abort_unless($owner, 403);
             } elseif ($t->status === 'disputed') {
-                abort_unless(in_array($actor->role, ['admin', 'moderator']), 403);
+                abort_unless($actor->role === 'admin', 403);
             } else {
                 abort_unless($owner || $provider, 403);
             }

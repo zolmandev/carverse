@@ -45,13 +45,46 @@ class SuperUserManagementTest extends TestCase
         $this->assertDatabaseMissing('communities', ['id' => $g->id]);
     }
 
-    public function test_other_roles_cannot_manage_group_links_or_racing(): void
+    public function test_enthusiasts_cannot_manage_group_links_or_racing(): void
     {
-        foreach (['owner', 'moderator'] as $role) {
-            $this->actingAs(User::factory()->create(['role' => $role]));
-            $this->post('/communities', ['name' => 'X', 'model' => 'Y', 'url' => 'https://chat.whatsapp.com/Test123'])->assertForbidden();
-            $this->post('/racing', [])->assertForbidden();
-        }
+        $this->actingAs(User::factory()->create());
+        $this->post('/communities', ['name' => 'X', 'model' => 'Y', 'url' => 'https://chat.whatsapp.com/Test123'])->assertForbidden();
+        $this->post('/racing', [])->assertForbidden();
+    }
+
+    public function test_only_admins_can_manage_active_roles_and_seller_requires_approval(): void
+    {
+        $member = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($member)->post('/users/'.$member->id.'/role', ['role' => 'admin'])->assertForbidden();
+        $this->actingAs($admin)->post('/users/'.$member->id.'/role', ['role' => 'moderator'])->assertSessionHasErrors('role');
+        $this->post('/users/'.$member->id.'/role', ['role' => 'owner'])->assertSessionHasErrors('role');
+        $this->post('/users/'.$member->id.'/role', ['role' => 'seller'])->assertSessionHasErrors('role');
+        $this->post('/users/'.$member->id.'/role', ['role' => 'admin'])->assertRedirect();
+        $this->assertSame('admin', $member->fresh()->role);
+        $this->post('/users/'.$member->id.'/role', ['role' => 'enthusiast'])->assertRedirect();
+        $this->assertSame('enthusiast', $member->fresh()->role);
+    }
+
+    public function test_user_management_lists_and_filters_accounts_for_admins_only(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $member = User::factory()->create(['name' => 'Baraka Otieno', 'email' => 'baraka@example.test']);
+        User::factory()->create(['name' => 'Amani Wanjiru', 'email' => 'amani@example.test']);
+        User::factory()->create(['name' => 'Seller Account', 'email' => 'seller@example.test', 'role' => 'seller']);
+
+        $this->actingAs($admin)->get('/app/admin?tab=users&q=baraka&user_role=enthusiast')
+            ->assertInertia(fn (Assert $page) => $page->component('carverse/super-user')
+                ->where('tab', 'users')->has('users.accounts.data', 1)
+                ->where('users.accounts.data.0.id', $member->id)
+                ->where('users.accounts.data.0.role', 'enthusiast')
+                ->missing('users.accounts.data.0.profile_image_path')
+                ->where('users.counts.enthusiast', 2)
+                ->where('users.counts.seller', 1)
+                ->where('users.counts.admin', 1));
+        $this->get('/app/admin?tab=users&user_role=invalid')->assertSessionHasErrors('user_role');
+        $this->actingAs($member)->get('/app/admin?tab=users')->assertForbidden();
     }
 
     public function test_untrusted_invitation_domains_are_rejected(): void

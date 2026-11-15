@@ -1,0 +1,28 @@
+:root {
+    --cv-site-width: 1560px;
+    --cv-site-gutter: clamp(18px, 4vw, 76px);
+}
+/* Shared page shell; reading columns and forms keep their own inner measure. */
+.cv-public.cv-public {
+    padding: 24px var(--cv-site-gutter) 40px;
+}
+.cv-public.cv-public > :is(header, main, section, nav, footer, div) {
+    width: 100%;
+    max-width: var(--cv-site-width);
+    margin-left: auto;
+    margin-right: auto;
+}
+.cv-auth.cv-auth {
+    padding: 24px var(--cv-site-gutter) 20px;
+}
+.cv-auth .cv-global-header {
+    max-width: var(--cv-site-width);
+}
+@media (max-width: 800px) {
+    .cv-public.cv-public {
+        padding: 16px 18px 28px;
+    }
+    .cv-auth.cv-auth {
+        padding: 16px 18px 20px;
+    }
+}

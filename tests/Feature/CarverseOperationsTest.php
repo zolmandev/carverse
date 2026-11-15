@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -30,9 +31,11 @@ class CarverseOperationsTest extends TestCase
 
     public function test_registration_vehicle_request_and_provider_quote_use_real_http_routes(): void
     {
-        $this->post('/register', ['name' => 'New Owner', 'email' => 'new@example.test', 'password' => 'SecurePassword123!', 'password_confirmation' => 'SecurePassword123!'])->assertRedirect('/dashboard');
+        config(['services.hashback.key' => 'test-key']);
+        Http::fake(['www.hashback.co.ke/*' => Http::response(['success' => true], 200)]);
+        $this->post('/register', ['name' => 'New Owner', 'email' => 'new@example.test', 'phone' => '0712345678', 'password' => 'SecurePassword123!', 'password_confirmation' => 'SecurePassword123!'])->assertRedirect('/verify-phone');
         $u = User::where('email', 'new@example.test')->firstOrFail();
-        $u->forceFill(['email_verified_at' => now()])->save();
+        $u->forceFill(['phone_verified_at' => now()])->save();
         $this->actingAs($u);
         $this->post('/vehicles', ['make' => 'Toyota', 'model' => 'Vitz', 'year' => 2015, 'identifier' => 'KSP130-1234567', 'fuel_type' => 'Petrol', 'transmission' => 'CVT', 'mileage' => 45000, 'mileage_date' => today()->toDateString()])->assertRedirect();
         $v = $u->vehicles()->firstOrFail();
@@ -66,7 +69,7 @@ class CarverseOperationsTest extends TestCase
         $rec = ServiceRecord::create(['vehicle_id' => $v->id, 'author_id' => $u->id, 'service_date' => today(), 'mileage' => 80000, 'work' => 'Oil service']);
         $a = Attachment::create(['user_id' => $u->id, 'service_record_id' => $rec->id, 'path' => 'evidence/invoice.pdf', 'name' => 'invoice.pdf']);
         Storage::disk('local')->put($a->path, 'Invoice');
-        $mod = User::factory()->create(['role' => 'moderator']);
+        $mod = User::factory()->create(['role' => 'admin']);
         $this->actingAs($mod)->get('/attachments/'.$a->id)->assertDownload();
         $this->post('/records/'.$rec->id.'/evidence-review', ['reason' => 'Reviewed invoice date and itemized work'])->assertRedirect();
         $this->assertSame('supported by reviewed evidence', $rec->fresh()->provenance);

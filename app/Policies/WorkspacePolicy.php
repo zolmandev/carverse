@@ -33,7 +33,7 @@ class WorkspacePolicy
 
     public function moderate(User $u): bool
     {
-        return in_array($u->role, ['moderator', 'admin']);
+        return $u->role === 'admin';
     }
 
     public function admin(User $u): bool

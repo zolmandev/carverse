@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import PublicHeader from './public-header';
 import { ServiceRecord, Vehicle } from './types';
 import { Badge, Card, date } from './ui';
 import './workspace.css';
@@ -14,6 +15,7 @@ export default function Shared({
     return (
         <div className="cv-public">
             <Head title="Shared vehicle history" />
+            <PublicHeader />
             <section>
                 <Badge>READ-ONLY VEHICLE HISTORY</Badge>
                 <h1 className="cv-public-heading">

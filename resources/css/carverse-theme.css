@@ -1,0 +1,387 @@
+.cv-theme-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 9px;
+    border: 1px solid #dce1e9;
+    border-radius: 10px;
+    color: #485363;
+    background: #ffffffb8;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 500;
+}
+.cv-theme-switcher select {
+    color: inherit;
+    font: inherit;
+    border: 0;
+    background: transparent;
+    width: auto;
+    min-height: 24px;
+    cursor: pointer;
+    padding: 0 3px;
+}
+.cv-theme-switcher select:focus-visible {
+    outline: 2px solid #d32f2f;
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+.cv-auth-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+html.dark {
+    --cv-ink: #e5e9f1;
+    --cv-muted: #a3adbd;
+    --cv-border: #303b4c;
+    --cv-bg: #101722;
+    --cv-red: #ed686d;
+}
+.dark .cv-app,
+.dark .cv-public {
+    color-scheme: dark;
+    color: var(--cv-ink);
+    background: #101722;
+}
+.dark .cv-theme-switcher {
+    color: #d8e0ee;
+    background: #202b3c;
+    border-color: #3c485a;
+}
+.dark .cv-theme-switcher select {
+    background: transparent;
+    color: inherit;
+}
+.dark .cv-theme-switcher option {
+    background: #202b3c;
+    color: #e5e9f1;
+}
+.dark :is(.cv-sidebar, .cv-topbar, .cv-card, .cv-context, .cv-stat, .cv-quick-card, .cv-details > div, .cv-landing-events) {
+    background: #192332;
+    border-color: #303b4c;
+}
+.dark :is(.cv-app, .cv-public) :is(input, select, textarea) {
+    background: #131d2b;
+    color: #e5e9f1;
+    border-color: #3a475a;
+}
+.dark :is(.cv-app, .cv-public) input::placeholder,
+.dark :is(.cv-app, .cv-public) textarea::placeholder {
+    color: #98a4b6;
+}
+.dark .cv-theme-switcher select {
+    background: transparent;
+}
+.dark :is(.cv-app, .cv-public) :is(h1, h2, h3, strong) {
+    color: inherit;
+}
+.dark
+    :is(
+        .cv-card p,
+        .cv-quick-card p,
+        .cv-card small,
+        .cv-field > span,
+        .cv-sidebar nav a,
+        .cv-sidebar-bottom > a,
+        .cv-breadcrumb,
+        .cv-breadcrumb strong,
+        .cv-muted,
+        .cv-stat > span,
+        .cv-stat > small,
+        .cv-catalog-attribution,
+        .cv-catalog-hint
+    ) {
+    color: #aeb8c8;
+}
+.dark .cv-logo {
+    color: #edf0f7;
+}
+.dark :is(.cv-ke, .cv-sidebar nav a.selected, .cv-catalog-tabs a.active) {
+    background: #512831;
+    color: #ffc1c6;
+    border-color: #77414b;
+}
+.dark .cv-sidebar nav a:hover,
+.dark .cv-sidebar-bottom > a:hover {
+    background: #263142;
+}
+.dark :is(.cv-button, .cv-app button.bg-primary) {
+    background: #d3323a;
+    border-color: #dd4f55;
+    color: #fff;
+}
+.dark .cv-button:hover {
+    background: #b82a31;
+}
+.dark .cv-button.light {
+    background: #253144;
+    border-color: #3a475a;
+    color: #f6bec2;
+}
+.dark .cv-link,
+.dark .cv-tags a {
+    color: #ffacb2;
+}
+.dark .cv-catalog-tabs a {
+    background: #192332;
+    border-color: #3a475a;
+    color: #c2cbda;
+}
+.dark .cv-group-editing {
+    background: #33232d;
+}
+.dark .cv-brand-mark {
+    background: #fff;
+    color: #a22e2e;
+}
+.dark .cv-badge {
+    background: #2d394c;
+    color: #d3dcec;
+}
+.dark .cv-badge.green {
+    background: #183f34;
+    color: #9ee1c2;
+}
+.dark .cv-badge.amber {
+    background: #473722;
+    color: #f3cd91;
+}
+.dark .cv-badge.red {
+    background: #4d2830;
+    color: #ffc1c6;
+}
+.dark .cv-badge.hero {
+    background: #ffffff10;
+    color: #ffd0d3;
+    border-color: #ffffff25;
+}
+.dark :is(.cv-note, .cv-trust-note) {
+    background: #202c3d;
+    border-color: #3a475a;
+    color: #c6d1e0;
+}
+.dark :is(.cv-success, .cv-errors) {
+    border-color: #3a475a;
+}
+.dark .cv-success {
+    background: #193c32;
+    color: #b8ecd3;
+}
+.dark .cv-errors {
+    background: #43252d;
+    color: #ffd0d3;
+}
+.dark :is(.cv-app, .cv-public) :is(th, td) {
+    border-color: #303b4c;
+}
+.dark :is(.cv-app, .cv-public) th {
+    color: #aeb8c8;
+    background: #202b3c;
+}
+.dark .cv-table-wrap {
+    border-color: #303b4c;
+}
+.dark :is(.cv-request-row, .cv-audit-row, .cv-person, .cv-event-preview-list li, .cv-race-preview-list li) {
+    border-color: #303b4c;
+}
+.dark :is(.cv-race-distance-tabs, .cv-event-poster) {
+    background: #253144;
+}
+.dark .cv-race-distance-tabs button {
+    color: #bac6d8;
+}
+.dark .cv-race-distance-tabs button.selected {
+    background: #c92e36;
+    color: white;
+}
+.dark :is(.cv-events-sidebar-icon, .cv-event-preview-date) {
+    background: #482833;
+    color: #ffc0c5;
+}
+.dark :is(.cv-event-preview-list h3 a, .cv-sidebar-blog-item h3) {
+    color: #e5e9f1;
+}
+.dark .cv-blog-intro,
+.dark .cv-blog-grid small {
+    color: #bac5d5;
+}
+/* Glass landing retains layered translucent surfaces in dark mode. */
+.dark .cv-landing-glass {
+    --cv-border: #3a4255;
+    --cv-muted: #abb6c9;
+    background:
+        radial-gradient(ellipse at 6% 7%, #492837 0, transparent 36%), radial-gradient(ellipse at 92% 14%, #253955 0, transparent 35%),
+        radial-gradient(ellipse at 55% 72%, #302439 0, transparent 42%), #101521;
+}
+.dark .cv-landing-glass .cv-public-header {
+    background: #1a2435df;
+    border-color: #ffffff1f;
+    box-shadow:
+        0 8px 32px #0002,
+        inset 0 1px 0 #ffffff0a;
+}
+.dark .cv-landing-glass .cv-card,
+.dark .cv-landing-glass .cv-landing-events {
+    background: #1b2536e8;
+    border-color: #ffffff1c;
+    box-shadow:
+        0 12px 38px #0002,
+        inset 0 1px 0 #ffffff08;
+}
+.dark .cv-landing-glass .cv-public-nav > .cv-link,
+.dark .cv-landing-glass .cv-card h3,
+.dark .cv-landing-glass .cv-sidebar-blog-item h3 {
+    color: #e1e7f1;
+}
+.dark .cv-landing-glass .cv-card p {
+    color: #adb8ca;
+}
+.dark .cv-landing-glass .cv-button {
+    color: #fff;
+    background: linear-gradient(135deg, #d93c44, #b92c34);
+    border-color: #e6676e;
+}
+.dark .cv-landing-glass .cv-button.light {
+    background: #293448a8;
+    color: #e3e9f3;
+    border-color: #ffffff26;
+    box-shadow: inset 0 1px 0 #ffffff08;
+}
+.dark .cv-landing-glass .cv-landing-primary .cv-card > svg,
+.dark .cv-landing-glass .cv-events-sidebar-icon,
+.dark .cv-landing-glass .cv-event-preview-date {
+    background: linear-gradient(145deg, #412b3a, #352939);
+    border-color: #ffffff13;
+    color: #ffadb5;
+}
+.dark .cv-landing-glass .cv-race-distance-tabs {
+    background: #111a2b80;
+    border-color: #ffffff13;
+}
+.dark .cv-landing-glass .cv-field select {
+    background: #172131;
+    border-color: #3a475a;
+}
+.dark .cv-landing-glass :is(.cv-sidebar-blog, .cv-sidebar-blog-list li + li, .cv-event-preview-list li, .cv-race-preview-list li) {
+    border-color: #ffffff15;
+}
+.dark .cv-landing-glass .cv-sidebar-blog-category {
+    color: #ffabb3;
+}
+.dark .cv-landing-glass .cv-sidebar-blog-item small {
+    color: #aeb8c9;
+}
+.dark .cv-landing-glass .cv-trust-note {
+    background: #1a2435c7;
+    border-color: #ffffff19;
+}
+@supports (backdrop-filter: blur(16px)) {
+    .dark .cv-landing-glass :is(.cv-public-header, .cv-card, .cv-landing-events) {
+        background: #1b2536b8;
+    }
+}
+/* Auth forms use the same theme, including reset and verification screens. */
+.dark .cv-auth {
+    --primary: #d3323a;
+    --primary-foreground: #fff;
+    --background: #192332;
+    --foreground: #e5e9f1;
+    --input: #3a475a;
+    --border: #3a475a;
+    --ring: #ff9ca4;
+    --muted-foreground: #aeb8c8;
+    --secondary: #263247;
+    --secondary-foreground: #e5e9f1;
+    color-scheme: dark;
+    background: #101722;
+    color: #e5e9f1;
+}
+.dark .cv-auth .cv-auth-grid {
+    background: #192332;
+    border-color: #303b4c;
+}
+.dark .cv-auth :is(input:not([type='checkbox'])) {
+    background: #131d2b;
+    color: #e5e9f1;
+    border-color: #3a475a;
+}
+.dark .cv-auth label {
+    color: #d8e0ee;
+}
+.dark .cv-auth .cv-auth-form-heading p,
+.dark .cv-auth .cv-auth-back {
+    color: #aeb8c8;
+}
+.dark .cv-auth .cv-auth-form-inner a {
+    color: #ffabb3;
+}
+.dark .cv-auth :is(.cv-auth-form-icon, .cv-auth-ke) {
+    background: #482833;
+    color: #ffc0c5;
+    border-color: #623540;
+}
+.dark .cv-auth .cv-theme-switcher select {
+    background: transparent;
+    color: #e5e9f1;
+}
+@media (max-width: 600px) {
+    .cv-auth-header-actions {
+        gap: 12px;
+    }
+    .cv-auth-header {
+        flex-wrap: wrap;
+    }
+    .cv-auth-header-actions {
+        margin-left: auto;
+    }
+    .cv-auth-back {
+        font-size: 11px;
+    }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .dark .cv-landing-glass :is(.cv-public-header, .cv-card, .cv-landing-events, .cv-trust-note) {
+        background: #192332;
+        backdrop-filter: none;
+    }
+}
+
+.dark :is(.cv-empty, .cv-search, .cv-quote, .cv-pager a) {
+    background: #192332;
+    border-color: #303b4c;
+    color: #b8c3d3;
+}
+.dark .cv-pager a.active {
+    background: #c92e36;
+    color: white;
+}
+.dark .cv-part-image {
+    background: linear-gradient(130deg, #253144, #1c2738);
+}
+.dark .cv-demo-label,
+.dark .cv-warning {
+    background: #3c3023;
+    border-color: #756043;
+    color: #f2ce95 !important;
+}
+.dark .cv-details > summary {
+    color: #ffabb3;
+}
+.dark .cv-vehicle-facts span {
+    color: #aeb8c8;
+}
+.cv-topbar > .cv-theme-switcher {
+    margin-left: auto;
+    margin-right: 20px;
+}
+@media (max-width: 600px) {
+    .cv-topbar {
+        gap: 10px;
+    }
+    .cv-topbar > .cv-theme-switcher {
+        margin-right: 0;
+    }
+    .cv-topbar > .cv-breadcrumb {
+        display: none;
+    }
+}

@@ -61,8 +61,9 @@ function ReviewForm({ provider }: { provider: Application }) {
                 </label>
             )}
             <p>
-                Approval publishes the profile and enables provider access. It covers only the recorded checks and does not guarantee every skill,
-                qualification, or future job.
+                {provider.kind === 'supplier'
+                    ? 'Approval publishes the parts supplier and upgrades its applicant accounts to Seller. It covers only the recorded checks and does not guarantee every product or future order.'
+                    : 'Approval publishes the profile and enables provider access. It covers only the recorded checks and does not guarantee every skill, qualification, or future job.'}
             </p>
         </ActionForm>
     );

@@ -30,14 +30,14 @@ class DatabaseSeeder extends Seeder
         }
         $this->call(CarCatalogSeeder::class);
         $password = Hash::make('CarverseDemo!2026');
-        $owner = User::firstOrCreate(['email' => 'owner@carverse.test'], ['name' => 'Amani Wanjiru (Demo)', 'password' => $password, 'email_verified_at' => now(), 'phone' => '+254700000001']);
+        $owner = User::firstOrCreate(['email' => 'owner@carverse.test'], ['name' => 'Amani Wanjiru (Demo)', 'password' => $password, 'email_verified_at' => now(), 'phone' => '+254700000001', 'phone_verified_at' => now()]);
         $owner->forceFill(['role' => 'admin'])->save();
-        $admin = User::firstOrCreate(['email' => 'admin@carverse.test'], ['name' => 'Pilot Administrator (Demo)', 'password' => $password, 'email_verified_at' => now(), 'role' => 'admin']);
-        User::firstOrCreate(['email' => 'moderator@carverse.test'], ['name' => 'Pilot Moderator (Demo)', 'password' => $password, 'email_verified_at' => now(), 'role' => 'moderator']);
-        $second = User::firstOrCreate(['email' => 'owner2@carverse.test'], ['name' => 'Baraka Otieno (Demo)', 'password' => $password, 'email_verified_at' => now()]);
-        $v = Vehicle::firstOrCreate(['user_id' => $owner->id, 'registration' => 'KDE 000D'], ['make' => 'Toyota', 'model' => 'Fielder', 'year' => 2016, 'variant' => '1.5 Hybrid', 'engine_code' => '1NZ-FXE', 'fuel_type' => 'Hybrid', 'transmission' => 'CVT', 'identifier' => 'NKE165-0000000', 'mileage' => 87450, 'mileage_date' => today()->subDays(12)]);
-        Vehicle::firstOrCreate(['user_id' => $owner->id, 'registration' => 'KCF 000D'], ['make' => 'Subaru', 'model' => 'Forester', 'year' => 2014, 'variant' => '2.0 XT', 'engine_code' => 'FA20', 'fuel_type' => 'Petrol', 'transmission' => 'CVT', 'identifier' => 'SJG-000000', 'mileage' => 118200, 'mileage_date' => today()->subDays(55)]);
-        Vehicle::firstOrCreate(['user_id' => $second->id, 'registration' => 'KDG 000D'], ['make' => 'Mazda', 'model' => 'Demio', 'year' => 2017, 'fuel_type' => 'Petrol', 'transmission' => 'Automatic', 'mileage' => 63000, 'mileage_date' => today()]);
+        $admin = User::firstOrCreate(['email' => 'admin@carverse.test'], ['name' => 'Pilot Administrator (Demo)', 'password' => $password, 'email_verified_at' => now(), 'phone' => '+254700000002', 'phone_verified_at' => now()]);
+        $admin->forceFill(['role' => 'admin'])->save();
+        $second = User::firstOrCreate(['email' => 'owner2@carverse.test'], ['name' => 'Baraka Otieno (Demo)', 'password' => $password, 'email_verified_at' => now(), 'phone' => '+254700000003', 'phone_verified_at' => now()]);
+        $v = Vehicle::firstOrCreate(['user_id' => $owner->id, 'make' => 'Toyota', 'model' => 'Fielder', 'year' => 2016], ['variant' => '1.5 Hybrid', 'engine_code' => '1NZ-FXE', 'fuel_type' => 'Hybrid', 'transmission' => 'CVT', 'identifier' => 'NKE165-0000000', 'mileage' => 87450, 'mileage_date' => today()->subDays(12)]);
+        Vehicle::firstOrCreate(['user_id' => $owner->id, 'make' => 'Subaru', 'model' => 'Forester', 'year' => 2014], ['variant' => '2.0 XT', 'engine_code' => 'FA20', 'fuel_type' => 'Petrol', 'transmission' => 'CVT', 'identifier' => 'SJG-000000', 'mileage' => 118200, 'mileage_date' => today()->subDays(55)]);
+        Vehicle::firstOrCreate(['user_id' => $second->id, 'make' => 'Mazda', 'model' => 'Demio', 'year' => 2017], ['fuel_type' => 'Petrol', 'transmission' => 'Automatic', 'mileage' => 63000, 'mileage_date' => today()]);
         $names = ['Redline Auto Care', 'Karibu Hybrid Workshop', 'Ridgeway Subaru Studio', 'Eastlands Motor Works', 'Mji Auto Specialists', 'Junction Parts Supply', 'Metro OEM Spares', 'Pamoja Auto Parts'];
         $locations = ['Industrial Area', 'Ngong Road', 'Ridgeways', 'Donholm', 'Westlands', 'Kirinyaga Road', 'Mombasa Road', 'Parklands'];
         $orgs = [];
@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
             $kind = $i < 5 ? 'garage' : 'supplier';
             $o = Organization::firstOrCreate(['name' => $name.' (Fictional)'], ['kind' => $kind, 'location' => $locations[$i].', Nairobi', 'phone' => '+25470000000'.($i + 1), 'description' => 'Fictional Nairobi pilot provider for testing vehicle care workflows. No real business endorsement is implied.', 'status' => 'approved', 'verification_scope' => 'DEMO: simulated business identity and contact review only. No real-world verification performed.', 'verified_at' => now()->subDays(7), 'specialties' => $i < 5 ? ['Toyota', 'Scheduled maintenance', 'Diagnostics'] : ['Filters', 'Brakes', 'Service parts'], 'opening_hours' => 'Mon–Sat · 8:00–18:00']);
             $orgs[] = $o;
-            $u = User::firstOrCreate(['email' => ($i < 5 ? 'garage' : 'supplier').($i < 5 ? $i + 1 : $i - 4).'@carverse.test'], ['name' => $name.' Staff (Demo)', 'password' => $password, 'email_verified_at' => now()]);
+            $u = User::firstOrCreate(['email' => ($i < 5 ? 'garage' : 'supplier').($i < 5 ? $i + 1 : $i - 4).'@carverse.test'], ['name' => $name.' Staff (Demo)', 'password' => $password, 'email_verified_at' => now(), 'phone' => '+25471100000'.($i + 1), 'phone_verified_at' => now()]);
             $o->members()->syncWithoutDetaching([$u->id]);
         }
         $parts = [['Oil filter', 'Denso', 'Filters', '90915-YZZE1', 145000, 'confirmed'], ['Front brake pads', 'Akebono', 'Brakes', 'AN-742WK', 680000, 'potential'], ['Air filter', 'Sakura', 'Filters', 'A-3302', 210000, 'unknown'], ['Front brake disc', 'Brembo', 'Brakes', '09-DEMO', 920000, 'incompatible'], ['Cabin air filter', 'Bosch', 'Filters', '0986-DEMO', null, 'unknown'], ['Iridium spark plug set', 'NGK', 'Ignition', 'ILK-DEMO', 840000, 'potential']];
@@ -96,5 +96,6 @@ class DatabaseSeeder extends Seeder
         Reminder::firstOrCreate(['vehicle_id' => $v->id, 'title' => 'Oil and filters'], ['due_date' => today()->addMonths(5), 'due_mileage' => 92000, 'source' => 'Owner-defined: 6 months or 5,000 km from fictional last service at 87,000 km. Not manufacturer guidance.']);
         Reminder::firstOrCreate(['vehicle_id' => $v->id, 'title' => 'Check tire pressures'], ['due_date' => today()->subDay(), 'source' => 'Owner-defined date; demonstration of scheduled reminders.']);
         Article::firstOrCreate(['title' => 'A better record starts with your next service'], ['author' => 'Carverse demo editorial team', 'body' => 'FICTIONAL DEMO CONTENT\n\nRecord the service date, odometer reading, work performed, and the source of each invoice. Ask your specialist which maintenance schedule applies to your engine and operating conditions.\n\nA service history is useful evidence, but it does not prove the vehicle has no other issues.', 'sources' => 'Demo editorial example. Consult the vehicle manufacturer’s service handbook for model-specific guidance.', 'status' => 'published', 'published_at' => today(), 'reviewed_at' => today()]);
+        $this->call(EventSeeder::class);
     }
 }

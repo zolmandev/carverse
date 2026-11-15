@@ -23,7 +23,7 @@ const footerNavItems: NavItem[] = [
     },
     {
         title: 'My garage',
-        url: '/app/garage',
+        url: '/profile#garage',
         icon: BookOpen,
     },
 ];

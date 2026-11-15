@@ -28,6 +28,11 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'hashback' => [
+        'key' => env('HASHBACK_SMS_API_KEY'),
+        'base_url' => env('HASHBACK_SMS_BASE_URL', 'https://www.hashback.co.ke'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

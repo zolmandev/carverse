@@ -115,15 +115,17 @@ Run `php artisan db:seed` in a non-production environment. Password for these **
 
 The seeder refuses to run when `APP_ENV=production`. It is safe to rerun to add missing fixtures; existing work is not deleted. The fictional fixture evidence files are private plain-text training notes; user evidence uploads accept PDF, JPEG and PNG only, up to 5 MB. Demo chassis numbers, references, phones, reviews, and provider checks are not real-world claims.
 
-Registration, password reset, and signed email verification use the starter's Laravel session authentication. New users must verify their email before entering the workspace. Local `MAIL_MAILER=log` writes verification/reset links to `storage/logs/laravel.log`; configure a mail service for actual delivery. Demo accounts are already verified. Local logs may contain development authentication links and must remain private.
+Registration uses Laravel session authentication plus a six-digit SMS code sent through Hashback. New users provide a Kenyan mobile number and must verify it before entering the workspace; codes expire after 10 minutes and are stored only as hashes. Configure `HASHBACK_SMS_API_KEY` (and optionally `HASHBACK_SMS_BASE_URL`) for delivery. Email remains the sign-in and password-reset identifier, but is not a verification gate. Demo accounts are already phone-verified.
 
 ## Working workflows
 
-- **Garage:** multiple vehicles, imported frame/chassis identifiers, encrypted identifiers at rest, private registrations and vehicle photos, active vehicle selection and dated odometer readings.
+The public, read-only mobile API is documented in [`docs/MOBILE_API.md`](docs/MOBILE_API.md). It exposes versioned JSON endpoints for leaderboard results, upcoming events, articles, car features, approved garages and approved skilled mechanics.
+
+- **Garage:** multiple vehicles, imported frame/chassis identifiers, encrypted identifiers at rest, private vehicle photos, active vehicle selection and dated odometer readings. Registration numbers are not collected.
 - **Parts:** approved supplier listings, reference/category search, OEM references, conditions, stock, optional prices and photos, quote-only listings, supplier editing, four fitment states. A fitment assessment records assessor, time, evidence, relevant vehicle/part snapshots and fingerprints. Changes to identifying vehicle details or part specifications invalidate the current badge. Stock or price changes do not invalidate technical fitment.
 - **Quotes/orders/bookings:** one accepted quote per request, database uniqueness and request row locks, itemized integer-minor-unit totals, immutable accepted snapshots, explicitly authorized status transitions, cancellation, disputes and owner confirmation. Quote edits never change accepted terms. Provider staff can also own vehicles.
 - **Passport:** owner entries and completion-generated entries, provider attribution, private evidence downloads, source labels, revision snapshots with actor/reason/date, evidence review and invalidation of that review label after corrections.
-- **Sharing:** selected entries only, random tokens stored as hashes, 1–30 day expiry, revocation and request throttling. No owner contacts, registrations, identifiers or attachments in a shared page. Attachment access is independently authorized; a share token never authorizes evidence downloads.
+- **Sharing:** selected entries only, random tokens stored as hashes, 1–30 day expiry, revocation and request throttling. No owner contacts, identifiers or attachments in a shared page. Attachment access is independently authorized; a share token never authorizes evidence downloads.
 - **Maintenance:** explicit thresholds or calculated intervals from a real selected service date/odometer; in-app queued reminders, preferences, stale mileage messages and transaction-protected deduplication. No telemetry, diagnosis, predictive claims, recalls or invented model schedules.
 - **Reviews/complaints:** one four-metric review per owned completed transaction, counts and averages, provider replies, private evidence-backed complaints, responses, moderator decisions, appeals and audit history. Public summaries require a deliberate moderator action on a resolved complaint. No automatic allegation publication or paid rating/verification changes.
 - **Content/community:** draft/published articles, sources, authors and review dates, allowlisted YouTube/Vimeo video links, admin-managed WhatsApp invitation links with deliberate external navigation. Article text is escaped, not executed as HTML; arbitrary rich HTML and third-party embeds are intentionally not accepted.
@@ -241,7 +243,7 @@ npm run build
 composer validate --strict --no-check-publish
 ```
 
-Tests cover authentication and signed email verification, request creation, imported chassis identifiers, ownership and organization boundaries, quote snapshots and uniqueness, transitions, file privacy and upload limits, share expiry/revocation/redaction, fitment evidence and invalidation, record corrections/review invalidation, review eligibility, complaint publication, role/financial boundaries, reminders and deduplication, deletion review, and payment reference/amount/currency mismatches, duplicate/failed/out-of-order callbacks with fake provider responses.
+Tests cover authentication and SMS phone verification, request creation, imported chassis identifiers, ownership and organization boundaries, quote snapshots and uniqueness, transitions, file privacy and upload limits, share expiry/revocation/redaction, fitment evidence and invalidation, record corrections/review invalidation, review eligibility, complaint publication, role/financial boundaries, reminders and deduplication, deletion review, and payment reference/amount/currency mismatches, duplicate/failed/out-of-order callbacks with fake provider responses.
 
 The implementation report in `docs/IMPLEMENTATION.md` records actual checks and remaining environment limitations. Browser visual inspection was unavailable. Run the application at mobile and desktop widths before launch.
 
@@ -262,4 +264,49 @@ The implementation report in `docs/IMPLEMENTATION.md` records actual checks and 
 
 ## Later phases (not built and not advertised in navigation)
 
-Events/QR tickets; real-time SOS or towing dispatch; manufacturer-backed part authenticity; automatic official recalls; consumer subscriptions; native mobile applications. Payment escrow, automatic payouts and split settlement are not claimed features.
+QR event ticketing; real-time SOS or towing dispatch; manufacturer-backed part authenticity; automatic official recalls; consumer subscriptions; native mobile applications. Payment escrow, automatic payouts and split settlement are not claimed features.
+
+
+### Blog and event approvals
+
+The super-user workspace now includes **Blog** (`/app/admin?tab=blog`) and **Event approvals** (`/app/admin?tab=events`). Use the existing local demo super-user credentials documented above.
+
+Blog posts support title, author, category, introduction, plain-text body, references, optional YouTube/Vimeo link, review date and draft/published status. Drafts are private. Public `/blog` provides search and pagination; individual posts have stable URLs. The landing page displays the three latest published articles from the database. Existing guides are preserved, and the seeded fictional guide stays labeled as demo content. Raw HTML is rendered as text rather than executed. No external publishing integration is required.
+
+Verified signed-in users can submit events at `/events` or `/app/events`, with optional poster and required private organizer evidence. A super user reviews the evidence, records a note and approval scope, and approves or rejects. Only approved current versions of upcoming events appear publicly. Editing an approved event returns it to pending; withdrawal removes it from public listings. Organizer contacts and evidence remain private to the submitter and administrators. Dates entered in Nairobi time are persisted in UTC. Approval describes the recorded checks, not an event safety guarantee. Tickets and payments are not implemented.
+
+Run `php artisan migrate` when updating an existing installation. These features use the configured database and private local filesystem. No event or blog data is automatically published from external sources.
+
+Validation for this update: 98 backend tests / 917 assertions, TypeScript checking, ESLint, Pint and production asset build passed. Browser inspection was unavailable in this environment.
+
+### Featured images and additional editorial posts
+
+In **Super user → Blog**, upload an optional JPG, PNG or WebP featured image (maximum 5 MB) and supply its description for accessibility. Existing images can be replaced or removed. Images appear on landing-page cards, the blog listing and article pages. Draft images are accessible only to administrators; storage paths are never exposed in page data. Run `php artisan migrate` to add the image fields.
+
+Three original product guides are available through `php artisan db:seed --class=BlogArticlesSeeder`: understanding fitment labels, interpreting provider approval, and discovering car communities. This explicitly invoked seeder publishes these articles, preserves existing administrator edits and does not generate duplicate posts on rerun. It has been run in the local development database. These articles do not have uploaded photographs; the existing category artwork appears until an administrator adds an image.
+
+### Landing page events and racing
+
+The landing page now places an event slideshow in the main banner, a verified racing leaderboard on the left and an upcoming-events list on the right. Only approved current event versions whose end time has not passed appear. With no events, the original introductory banner and an explicit empty event list are shown. Event posters are optional. Slideshow controls include previous, next and pause; reduced-motion preferences disable autoplay initially. Sidebars stack below the banner on mobile.
+
+Leaderboard buttons select ¼ mile, ⅛ mile or ½ mile (stored distance categories 402, 201 and 805 metres respectively). An event selector keeps results scoped to the same event and distance; only manually verified runs are public, ordered by elapsed milliseconds with shared ranks for ties. The super-user racing form supports all three distances. Private evidence and review notes are excluded from landing-page data. Event submissions and racing event labels remain independently managed.
+
+`EventSeeder` adds three upcoming, approved fictional events for local development: a Nairobi night drive, an Eastlands car show and a track-day preparation workshop. Their evidence file, organizer, venue and schedule are labeled as demo fixtures; no real booking or endorsement is represented. The seeder is idempotent, refuses production, and is called by the normal `php artisan db:seed` flow. Run `php artisan db:seed --class=EventSeeder` to seed only the events.
+
+### Color themes
+
+The public header, authentication header and workspaces include a **Color theme** selector with Light, Dark and System options. The choice is stored in this browser, shared between its tabs, and applied before the initial page render. System mode follows operating-system theme changes. Preferences are not tied to an account; if browser storage is blocked, switching still works for the current session. Dark styling covers the glass landing page, public articles/events, auth forms, and owner/super-user workspaces. Theme behavior checks: `node --test tests/frontend/appearance.test.mjs`.
+
+### Global public header and demo leaderboard
+
+All front-facing pages, including the specialist directory and authentication screens, share the same logo, Specialists/Blog/Events links, theme selector and session-aware account actions. The signed-in workspaces retain their own navigation.
+
+`php artisan db:seed --class=LeaderboardSeeder` adds 15 explicitly fictional results (five per distance) without duplicating existing runs or replacing edits. It requires an existing administrator, stores clearly fictional evidence placeholders, and refuses production environments. The seeder has been run locally. Demo runs carry `is_demo=true` and are labeled as illustrative, never as actual reviewed race evidence. Real verified runs take priority per distance; demo and real results are not mixed. The event selector appears only when there is more than one available event. Empty leaderboard headings and messages have been removed as requested.
+
+### Car culture and car features
+
+The public design now centers on car features, meets, racing and stories while retaining the requested left leaderboard and right event/blog lists. Open `/features` to browse and search published build stories. In **Super user → Car features**, manage features through the existing blog publishing and private-image workflow, with optional vehicle/year/engine/transmission/region/credit/modification fields. Unpublished features remain private. Build specifications are editorial information rather than certified performance claims.
+
+Apply migrations, then optionally run `php artisan db:seed --class=CarFeaturesSeeder` in development for one explicitly fictional concept feature. It has been seeded locally and refuses production environments. The generated cover asset, exact generation prompt, and design notes are documented in [docs/design/car-culture.md](docs/design/car-culture.md).
+
+Single article pages use a two-column reading layout when space allows. Car features show the build information in a sticky sidebar, followed by related articles and popular reads. Popular ordering uses the article view counter; no popularity numbers are displayed. The sidebar collapses below the article on smaller screens.

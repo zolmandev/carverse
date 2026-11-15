@@ -1,29 +1,53 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CarCatalogController;
 use App\Http\Controllers\CarverseController as C;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderFeedbackController;
 use App\Http\Controllers\SuperUserController;
 use App\Http\Middleware\RetiredWorkflow;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('carverse/welcome'))->name('home');
+Route::get('/', [BlogController::class, 'home'])->name('home');
 Route::get('/photos/{type}/{id}', [C::class, 'photo'])->middleware('throttle:120,1');
 Route::get('/cars/brands/{brand}/logo', [CarCatalogController::class, 'logo']);
 Route::get('/provider-logos/{organization}', [C::class, 'providerLogo'])->middleware('throttle:120,1');
+Route::get('/events', [EventController::class, 'publicIndex']);
+Route::get('/events/{event}/poster', [EventController::class, 'poster'])->middleware('throttle:120,1');
+Route::get('/features', [BlogController::class, 'features']);
+Route::get('/blog', [BlogController::class, 'index']);
+Route::get('/blog/{slug}/image', [BlogController::class, 'image'])->middleware('throttle:120,1');
+Route::get('/blog/{slug}', [BlogController::class, 'show']);
 Route::get('/directory', [C::class, 'publicDirectory']);
+Route::get('/directory/{organization}', [C::class, 'providerDetail'])->whereNumber('organization');
+Route::get('/profile/{user}', [ProfileController::class, 'show'])->whereNumber('user');
 Route::get('/history/{token}', [C::class, 'shared'])->middleware('throttle:30,1');
 Route::post('/payments/callback/{token}', PaymentCallbackController::class)->middleware('throttle:60,1');
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'phone.verified'])->group(function () {
     Route::redirect('/dashboard', '/app')->name('dashboard');
-    Route::get('/app/{section?}', [C::class, 'index'])->whereIn('section', ['overview', 'garage', 'parts', 'providers', 'requests', 'passport', 'reminders', 'community', 'provider', 'admin', 'preferences']);
+    Route::redirect('/app/garage', '/profile#garage');
+    Route::get('/app/{section?}', [C::class, 'index'])->whereIn('section', ['overview', 'garage', 'parts', 'providers', 'requests', 'passport', 'reminders', 'community', 'events', 'provider', 'admin', 'preferences']);
+    Route::get('/app/provider/apply/{kind}', [C::class, 'providerApplicationPage'])->whereIn('kind', ['garage', 'mechanic', 'supplier']);
+    Route::get('/events/submit', [EventController::class, 'submitPage']);
+    Route::get('/events/mine', [EventController::class, 'minePage']);
+    Route::get('/events/{event}/edit', [EventController::class, 'editPage']);
+    Route::get('/profile', [ProfileController::class, 'edit']);
+    Route::post('/profile', [ProfileController::class, 'update']);
+    Route::get('/profiles/{user}/image', [ProfileController::class, 'image'])->whereNumber('user');
+    Route::post('/events', [EventController::class, 'store'])->middleware('throttle:5,10');
+    Route::put('/events/{event}', [EventController::class, 'update']);
+    Route::post('/events/{event}/withdraw', [EventController::class, 'withdraw']);
+    Route::post('/events/{event}/review', [EventController::class, 'review']);
+    Route::put('/admin/events/{event}', [EventController::class, 'adminUpdate']);
+    Route::get('/events/{event}/evidence', [EventController::class, 'evidence']);
     Route::post('/vehicles', [C::class, 'vehicle']);
     Route::put('/vehicles/{vehicle}', [C::class, 'updateVehicle']);
     Route::post('/vehicles/{vehicle}/active', [C::class, 'active']);
     Route::post('/requests/{serviceRequest}/cancel', [C::class, 'cancelRequest']);
-    Route::put('/articles/{article}', [C::class, 'content']);
+    Route::put('/articles/{article}', [BlogController::class, 'save']);
     Route::post('/requests', [C::class, 'requestQuote'])->middleware('throttle:10,1');
     Route::post('/requests/{serviceRequest}/quotes', [C::class, 'quote']);
     Route::post('/quotes/{quote}/accept', [C::class, 'accept']);
@@ -49,7 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/parts', [C::class, 'part']);
     Route::put('/parts/{part}', [C::class, 'part']);
     Route::post('/parts/{part}/fitment', [C::class, 'fitment']);
-    Route::post('/articles', [C::class, 'content']);
+    Route::post('/articles', [BlogController::class, 'save']);
     Route::post('/articles/{article}/publish', [C::class, 'publish']);
     Route::get('/cars/brands/{brand}/models', [CarCatalogController::class, 'models']);
     Route::get('/cars/models/{model}/trims', [CarCatalogController::class, 'trims']);

@@ -1,3 +1,4 @@
+import type { EventsData } from './event-types';
 export interface Vehicle {
     photo_url: string | null;
     id: number;
@@ -8,7 +9,6 @@ export interface Vehicle {
     engine_code: string;
     fuel_type: string;
     transmission: string;
-    registration: string;
     identifier: string;
     mileage: number;
     mileage_date: string;
@@ -152,6 +152,7 @@ export interface Paginated<T> {
     links: { url: string | null; label: string; active: boolean }[];
 }
 export interface WorkspaceProps {
+    events: EventsData | null;
     disputes: Transaction[];
     providerParts: Paginated<Part>;
     demoData: boolean;

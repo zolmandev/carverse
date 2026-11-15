@@ -2,6 +2,7 @@
 
 namespace App\Queries;
 
+use App\Http\Controllers\EventController;
 use App\Models\Article;
 use App\Models\Attachment;
 use App\Models\AuditEvent;
@@ -50,15 +51,15 @@ class WorkspaceQuery
         $providers = $this->providers();
 
         $data = [
-            'demoData' => str_ends_with($u->email, '@carverse.test') && ! app()->environment('production'), 'section' => $section, 'vehicles' => $vehicles, 'activeVehicle' => $active, 'requests' => $requests, 'transactions' => $transactions, 'parts' => $parts, 'providers' => $providers, 'organizations' => $u->organizations()->get()->makeVisible(['review_note', 'qualifications']), 'providerParts' => Part::with('organization')->whereIn('organization_id', $ids)->latest()->paginate(12, ['*'], 'provider_parts_page'),
+            'events' => $section === 'events' ? app(EventController::class)->ownerData($r) : null, 'demoData' => str_ends_with($u->email, '@carverse.test') && ! app()->environment('production'), 'section' => $section, 'vehicles' => $vehicles, 'activeVehicle' => $active, 'requests' => $requests, 'transactions' => $transactions, 'parts' => $parts, 'providers' => $providers, 'organizations' => $u->organizations()->get()->makeVisible(['review_note', 'qualifications']), 'providerParts' => Part::with('organization')->whereIn('organization_id', $ids)->latest()->paginate(12, ['*'], 'provider_parts_page'),
             'records' => ServiceRecord::with(['attachments', 'revisions'])->whereIn('vehicle_id', $vehicles->pluck('id'))->latest('service_date')->get(),
             'reminders' => Reminder::with('vehicle')->whereIn('vehicle_id', $vehicles->pluck('id'))->get(),
             'shares' => HistoryShare::whereIn('vehicle_id', $vehicles->pluck('id'))->get(['id', 'vehicle_id', 'record_ids', 'expires_at', 'revoked_at']),
             'articles' => Article::where('status', 'published')->latest()->get(), 'communities' => Community::all(),
             'notifications' => $u->notifications()->latest()->limit(10)->get(),
             'admin' => $u->role === 'admin' ? ['organizations' => Organization::latest()->get(), 'users' => User::paginate(20, ['*'], 'users_page'), 'attachments' => Attachment::whereNotNull('organization_id')->get(), 'parts' => Part::with('organization', 'fitments.assessor:id,name')->latest()->limit(100)->get(), 'pilot_requests' => ServiceRequest::with('vehicle:id,make,model,year', 'quotes.organization', 'attachments')->latest()->paginate(20, ['*'], 'pilot_requests_page'), 'records' => ServiceRecord::with('attachments')->latest()->limit(30)->get(), 'transactions' => Transaction::with('organization', 'request.vehicle:id,make,model,year')->latest()->paginate(20, ['*'], 'admin_orders_page')->through(fn ($t) => $t->makeVisible(['commission_minor', 'variable_cost_minor'])), 'deletions' => DeletionRequest::with('user')->latest()->get(), 'audits' => AuditEvent::latest()->limit(60)->get(), 'articles' => Article::all(), 'metrics' => $this->metrics()] : null,
-            'disputes' => in_array($u->role, ['admin', 'moderator']) ? Transaction::with('organization')->where('status', 'disputed')->latest()->limit(30)->get() : [],
-            'moderation' => in_array($u->role, ['moderator', 'admin']) ? Complaint::with(['transaction.organization', 'attachments'])->latest()->paginate(20) : null,
+            'disputes' => $u->role === 'admin' ? Transaction::with('organization')->where('status', 'disputed')->latest()->limit(30)->get() : [],
+            'moderation' => $u->role === 'admin' ? Complaint::with(['transaction.organization', 'attachments'])->latest()->paginate(20) : null,
             'paymentMode' => config('payments.driver'), 'filters' => $r->only('q', 'category'), 'flash' => ['message' => session('message'), 'share_url' => session('share_url')],
         ];
         if (! config('carverse.legacy_workflows')) {

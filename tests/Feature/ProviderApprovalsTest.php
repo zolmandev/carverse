@@ -48,6 +48,7 @@ class ProviderApprovalsTest extends TestCase
     {
         foreach (['garage', 'mechanic'] as $kind) {
             $owner = User::factory()->create();
+            $this->actingAs($owner)->get('/app/provider/apply/'.$kind)->assertOk();
             $this->actingAs($owner)->post('/providers/apply', ['name' => 'New '.$kind, 'kind' => $kind, 'location' => 'Nairobi', 'phone' => '0712345678', 'description' => 'Specialist automotive services', 'years_experience' => 5, 'qualifications' => 'Applicant-reported training', 'specialties' => ['Toyota', 'Diagnostics'], 'opening_hours' => 'Monday to Saturday', 'logo' => $this->logo(), 'evidence' => UploadedFile::fake()->create('credentials.pdf', 1, 'application/pdf')])->assertSessionHasNoErrors()->assertRedirect();
             $org = Organization::where('kind', $kind)->firstOrFail();
             $this->assertSame('pending', $org->status);
@@ -76,6 +77,29 @@ class ProviderApprovalsTest extends TestCase
         }$this->post('/logout');
         $this->get('/directory')->assertInertia(fn (Assert $p) => $p->has('providers', 2)->missing('providers.0.qualifications')->missing('providers.0.review_note')->missing('providers.0.logo_path')->missing('providers.0.reviewed_by'));
         $this->get('/provider-logos/'.$org->id)->assertOk();
+    }
+
+    public function test_approving_a_parts_supplier_makes_the_applicant_a_seller(): void
+    {
+        [$owner, $supplier] = $this->provider('supplier');
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->post('/providers/'.$supplier->id.'/review', $this->decision())->assertSessionHasNoErrors()->assertRedirect();
+        $this->assertSame('seller', $owner->fresh()->role);
+        $this->assertDatabaseHas('audit_events', ['action' => 'user.role_changed', 'subject_id' => $owner->id]);
+
+        $this->post('/providers/'.$supplier->id.'/review', $this->decision('rejected'))->assertSessionHasNoErrors()->assertRedirect();
+        $this->assertSame('enthusiast', $owner->fresh()->role);
+    }
+
+    public function test_supplier_approval_does_not_replace_admin_access(): void
+    {
+        [$admin, $supplier] = $this->provider('supplier');
+        $admin->forceFill(['role' => 'admin'])->save();
+        $reviewer = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($reviewer)->post('/providers/'.$supplier->id.'/review', $this->decision())->assertRedirect();
+        $this->assertSame('admin', $admin->fresh()->role);
     }
 
     public function test_approval_requires_documents_scope_and_review_confirmation(): void

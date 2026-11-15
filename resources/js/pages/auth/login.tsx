@@ -36,8 +36,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
-            <Head title="Log in" />
+        <AuthLayout title="Welcome back" description="Sign in to your Carverse account and pick up where you left off.">
+            <Head title="Sign in" />
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
@@ -80,20 +80,26 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     </div>
 
                     <div className="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" tabIndex={3} />
+                        <Checkbox
+                            id="remember"
+                            name="remember"
+                            tabIndex={3}
+                            checked={data.remember}
+                            onCheckedChange={(checked) => setData('remember', checked === true)}
+                        />
                         <Label htmlFor="remember">Remember me</Label>
                     </div>
 
                     <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
+                        Sign in
                     </Button>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
                     Don't have an account?{' '}
                     <TextLink href={route('register')} tabIndex={5}>
-                        Sign up
+                        Join
                     </TextLink>
                 </div>
             </form>

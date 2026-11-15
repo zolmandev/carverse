@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $t) {
-            $t->string('role')->default('owner');
+            $t->string('role')->default('enthusiast');
             $t->string('phone')->nullable();
             $t->string('location')->default('Nairobi');
             $t->boolean('reminder_notifications')->default(true);

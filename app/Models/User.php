@@ -3,15 +3,15 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -33,7 +33,16 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'profile_image_path',
+        'phone_verification_code_hash',
     ];
+
+    protected $appends = ['profile_image_url'];
+
+    public function getProfileImageUrlAttribute(): ?string
+    {
+        return $this->profile_image_path ? url('/profiles/'.$this->id.'/image?v='.$this->updated_at?->timestamp) : null;
+    }
 
     public function organizations()
     {
@@ -50,6 +59,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->organizations()->whereKey($id)->where('status', 'approved')->exists();
     }
 
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone_verified_at !== null;
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -59,6 +73,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'phone_verification_expires_at' => 'datetime',
+            'phone_verification_sent_at' => 'datetime',
+            'phone_verification_attempts' => 'integer',
             'password' => 'hashed',
             'reminder_notifications' => 'boolean',
         ];

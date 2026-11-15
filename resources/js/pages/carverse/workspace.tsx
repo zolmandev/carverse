@@ -1,14 +1,15 @@
+import ThemeSwitcher from '@/components/theme-switcher';
 import { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Activity,
     ArrowDownToLine,
     ArrowRight,
+    CalendarDays,
     Car,
     Check,
     ChevronRight,
     ExternalLink,
-    Fuel,
     Gauge,
     LayoutDashboard,
     MapPin,
@@ -21,142 +22,116 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { CatalogAttribution } from './car-catalog';
-import { Vehicle, WorkspaceProps } from './types';
+import './culture.css';
+import EventsWorkspace from './events-workspace';
+import './landing-glass.css';
+import PublicHeader from './public-header';
+import { WorkspaceProps } from './types';
 import { ActionForm, Badge, Card, date, Details, Empty, Field, money, Pager } from './ui';
 import './workspace.css';
+import './overview.css';
 const options = (a: string[]) => a.map((x) => ({ value: x, label: x }));
 const titles: Record<string, [string, string]> = {
     overview: ['Your car. In good hands.', 'Everything you need to keep your car moving, in one place.'],
-    garage: ['My garage', 'A little context makes every recommendation better.'],
     parts: ['The right part starts here.', 'Find parts, check compatibility, and ask the supplier before you buy.'],
     providers: ['Find your specialist', 'Explore approved garages and parts suppliers around Nairobi.'],
+    events: ['Motoring events', 'Explore approved events and submit yours for review.'],
     community: ['A little knowledge. A better drive.', 'Practical guides and communities for the road ahead.'],
     provider: ['Provider workspace', 'Manage your organization, parts, and compatibility assessments.'],
     admin: ['Pilot operations', 'Review providers, resolve complaints, and understand the pilot.'],
     preferences: ['Your preferences', 'Manage profile details and your data.'],
 };
-function VehicleFields({ vehicle }: { vehicle?: Vehicle }) {
-    return (
-        <>
-            <Field name="photo" label="Vehicle photo (optional, JPEG / PNG, up to 5 MB)" type="file" required={false} />
-            <Field name="make" label="Make" value={vehicle?.make} />
-            <Field name="model" label="Model" value={vehicle?.model} />
-            <Field name="year" label="Year" type="number" min={1950} max={new Date().getFullYear() + 1} value={vehicle?.year ?? 2016} />
-            <Field name="variant" label="Variant (optional)" required={false} value={vehicle?.variant} />
-            <Field name="engine_code" label="Engine code (optional)" required={false} value={vehicle?.engine_code} />
-            <Field
-                name="fuel_type"
-                label="Fuel"
-                value={vehicle?.fuel_type ?? 'Petrol'}
-                options={options(['Petrol', 'Diesel', 'Hybrid', 'Electric'])}
-            />
-            <Field
-                name="transmission"
-                label="Transmission"
-                value={vehicle?.transmission ?? 'Automatic'}
-                options={options(['Automatic', 'Manual', 'CVT'])}
-            />
-            <Field name="registration" label="Registration (private)" required={false} value={vehicle?.registration} />
-            <Field name="identifier" label="VIN / chassis / frame number (private)" required={false} value={vehicle?.identifier} />
-            <Field name="mileage" label="Odometer (km)" type="number" min={vehicle?.mileage ?? 0} value={vehicle?.mileage ?? 0} />
-            <Field
-                name="mileage_date"
-                label="Reading date"
-                type="date"
-                value={vehicle?.mileage_date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10)}
-            />
-        </>
-    );
-}
 export default function Workspace(p: WorkspaceProps) {
-    const { auth } = usePage<SharedData>().props;
+    const page = usePage<SharedData>();
+    const { auth } = page.props;
     const [mobile, setMobile] = useState(false);
     const user = auth.user;
     const active = p.activeVehicle;
-    const vehicleOptions = p.vehicles.map((v) => ({ value: v.id, label: `${v.make} ${v.model} · ${v.registration || v.year}` }));
+    const vehicleOptions = p.vehicles.map((v) => ({ value: v.id, label: `${v.make} ${v.model} · ${v.year}` }));
     const orgOptions = p.organizations.filter((o) => o.status === 'approved').map((o) => ({ value: o.id, label: o.name }));
     const isProvider = orgOptions.length > 0;
     const isSupplier = p.organizations.some((o) => o.status === 'approved' && o.kind === 'supplier');
+    const enthusiastShell = p.section !== 'admin';
     const title = titles[p.section] ?? titles.overview;
     const nav = [
         ['overview', 'Overview', LayoutDashboard],
-        ['garage', 'My garage', Car],
         ['parts', 'Find parts', ShoppingBag],
         ['providers', 'Find specialists', Wrench],
         ['community', 'Guides & community', Users],
+        ['events', 'Events', CalendarDays],
     ] as const;
     return (
-        <div className="cv-app">
+        <div className={enthusiastShell ? 'cv-app cv-public cv-culture cv-enthusiast-landing cv-landing-glass' : 'cv-app'}>
             <Head title={title[0]} />
-            <aside className={`cv-sidebar ${mobile ? 'show' : ''}`}>
-                <Link href="/app" className="cv-logo">
-                    <span className="cv-logo-mark">
-                        <Car size={23} />
-                    </span>
-                    carverse<span className="cv-ke">KE</span>
-                </Link>
-                <span className="cv-pilot">NAIROBI PILOT</span>
-                <nav>
-                    {nav.map(([key, label, Icon]) => (
-                        <Link key={key} href={`/app/${key}`} className={p.section === key ? 'selected' : ''} onClick={() => setMobile(false)}>
-                            <Icon size={19} />
-                            {label}
-                        </Link>
-                    ))}
-                </nav>
-                <div className="cv-sidebar-bottom">
-                    <Link href="/app/provider">
-                        <Wrench size={18} />
-                        {isProvider ? 'Provider workspace' : 'Become a provider'}
+            {enthusiastShell && <PublicHeader />}
+            {!enthusiastShell && (
+                <aside className={`cv-sidebar ${mobile ? 'show' : ''}`}>
+                    <Link href="/app" className="cv-logo">
+                        carverse<span className="cv-ke">KE</span>
                     </Link>
-                    {(p.admin || p.moderation) && (
-                        <Link href="/app/admin">
-                            <ShieldCheck size={18} />
-                            Pilot operations
+                    <span className="cv-pilot">NAIROBI PILOT</span>
+                    <nav>
+                        {nav.map(([key, label, Icon]) => (
+                            <Link key={key} href={`/app/${key}`} className={p.section === key ? 'selected' : ''} onClick={() => setMobile(false)}>
+                                <Icon size={19} />
+                                {label}
+                            </Link>
+                        ))}
+                    </nav>
+                    <div className="cv-sidebar-bottom">
+                        <Link href="/app/provider">
+                            <Wrench size={18} />
+                            {isProvider ? 'Provider workspace' : 'Become a provider'}
                         </Link>
-                    )}
-                    <Link href="/app/preferences">
-                        <Settings size={18} />
-                        Preferences
-                    </Link>
-                    <div className="cv-person">
-                        <span>{user.name.slice(0, 1)}</span>
-                        <div>
-                            <strong>{user.name}</strong>
-                            <small>Vehicle owner{isProvider ? ' & provider' : ''}</small>
+                        {(p.admin || p.moderation) && (
+                            <Link href="/app/admin">
+                                <ShieldCheck size={18} />
+                                Pilot operations
+                            </Link>
+                        )}
+                        <Link href="/app/preferences">
+                            <Settings size={18} />
+                            Preferences
+                        </Link>
+                        <div className="cv-person">
+                            <span>{user.name.slice(0, 1)}</span>
+                            <div>
+                                <strong>{user.name}</strong>
+                                <small>{user.role === 'seller' ? 'Seller' : 'Enthusiast'}{isProvider ? ' & provider' : ''}</small>
+                            </div>
+                            <button onClick={() => router.post('/logout')} aria-label="Sign out">
+                                ↗
+                            </button>
                         </div>
-                        <button onClick={() => router.post('/logout')} aria-label="Sign out">
-                            ↗
+                    </div>
+                </aside>
+            )}
+            <div className={enthusiastShell ? 'cv-main cv-main-landing' : 'cv-main'}>
+                {!enthusiastShell && (
+                    <header className="cv-topbar">
+                        <button className="cv-mobile-toggle" aria-label="Toggle menu" onClick={() => setMobile(!mobile)}>
+                            ☰
                         </button>
-                    </div>
-                </div>
-            </aside>
-            <div className="cv-main">
-                <header className="cv-topbar">
-                    <button className="cv-mobile-toggle" aria-label="Toggle menu" onClick={() => setMobile(!mobile)}>
-                        ☰
-                    </button>
-                    <div className="cv-breadcrumb">
-                        My workspace <ChevronRight size={14} /> <strong>{p.section === 'overview' ? 'Overview' : title[0]}</strong>
-                    </div>
-                    <div className="cv-top-actions">
-                        <MapPin size={15} />
-                        <span>Nairobi, Kenya</span>
-                        <span className="cv-avatar">{user.name.slice(0, 1)}</span>
-                    </div>
-                </header>
-                <main className="cv-content">
-                    <div className="cv-page-heading">
-                        <div>
-                            <p className="cv-eyebrow">
-                                {p.section === 'overview' ? `WELCOME BACK, ${user.name.split(' ')[0].toUpperCase()}` : 'CARVERSE KE / YOUR WORKSPACE'}
-                            </p>
-                            <h1>{title[0]}</h1>
-                            <p>{title[1]}</p>
+                        <div className="cv-breadcrumb">
+                            My workspace <ChevronRight size={14} /> <strong>{title[0]}</strong>
                         </div>
-                    </div>
-                    {p.demoData && (
-                        <div className="cv-demo-label">FICTIONAL DEMO DATA · Provider names, listings, transactions, and reviews are examples.</div>
+                        <ThemeSwitcher />
+                        <div className="cv-top-actions">
+                            <MapPin size={15} />
+                            <span>Nairobi, Kenya</span>
+                            <span className="cv-avatar">{user.name.slice(0, 1)}</span>
+                        </div>
+                    </header>
+                )}
+                <main className={enthusiastShell ? 'cv-content cv-content-landing' : 'cv-content'}>
+                    {p.section !== 'overview' && (
+                        <div className="cv-page-heading">
+                            <div>
+                                <p className="cv-eyebrow">CARVERSE KE / YOUR WORKSPACE</p>
+                                <h1>{title[0]}</h1>
+                                <p>{title[1]}</p>
+                            </div>
+                        </div>
                     )}
                     {p.flash.message && (
                         <div role="status" className="cv-success">
@@ -169,15 +144,7 @@ export default function Workspace(p: WorkspaceProps) {
                             <a href={p.flash.share_url}>{p.flash.share_url}</a>
                         </div>
                     )}
-                    {p.section === 'overview' && !p.vehicles.length && (
-                        <Card title="Start with your first vehicle">
-                            <p>Add your car once, and bring the right context to every part and service request.</p>
-                            <ActionForm action="/vehicles" label="Add my first vehicle" wide>
-                                <VehicleFields />
-                            </ActionForm>
-                        </Card>
-                    )}
-                    {active && (
+                    {active && p.section !== 'overview' && (
                         <div className="cv-context">
                             <Car size={18} />
                             <span>YOUR ACTIVE VEHICLE</span>
@@ -193,156 +160,74 @@ export default function Workspace(p: WorkspaceProps) {
                                 ))}
                             </select>
                             <span className="cv-context-mileage">{active.mileage.toLocaleString()} km recorded</span>
-                            <Link href="/app/garage">
+                            <Link href="/profile#garage">
                                 Manage <ArrowRight size={14} />
                             </Link>
                         </div>
                     )}
                     {p.section === 'overview' && (
                         <>
-                            <div className="cv-overview-grid">
-                                <section className="cv-hero">
-                                    <div>
-                                        <Badge tone="hero">YOUR GARAGE, CONNECTED</Badge>
-                                        <h2>
-                                            More confidence.
-                                            <br />
-                                            Every kilometre.
-                                        </h2>
-                                        <p>Find the right parts and trusted specialists for your car.</p>
-                                        <Link href="/app/providers" className="cv-button light">
-                                            Find a specialist <ArrowRight size={16} />
-                                        </Link>
-                                    </div>
-                                    <div className="cv-car-art" aria-hidden="true">
-                                        <svg viewBox="0 0 500 260">
-                                            <ellipse cx="260" cy="223" rx="210" ry="14" fill="#000" opacity=".22" />
-                                            <path
-                                                d="M35 165L60 125L145 110L205 53Q220 43 270 45L350 53L412 112L456 130L475 180L462 205H40Z"
-                                                fill="#f1f2f3"
-                                            />
-                                            <path d="M161 108L214 60L267 58L269 108Z" fill="#373f49" />
-                                            <path d="M281 60L345 66L391 108H282Z" fill="#414b56" />
-                                            <path d="M45 165H469L461 193H40Z" fill="#bdc3c9" />
-                                            <path d="M50 130L112 125L99 145H43Z" fill="#fff" />
-                                            <path d="M420 121L452 137L459 151H424Z" fill="#d32f2f" />
-                                            <path d="M129 117H388" stroke="#a2aab1" strokeWidth="3" />
-                                            <path d="M275 118V180M158 117L149 174M394 118L414 171" stroke="#b0b7bd" strokeWidth="2" />
-                                            <circle cx="126" cy="195" r="43" fill="#171d24" />
-                                            <circle cx="126" cy="195" r="26" fill="#838d98" />
-                                            <circle cx="126" cy="195" r="13" fill="#ced3d9" />
-                                            <circle cx="395" cy="195" r="43" fill="#171d24" />
-                                            <circle cx="395" cy="195" r="26" fill="#838d98" />
-                                            <circle cx="395" cy="195" r="13" fill="#ced3d9" />
-                                        </svg>
-                                        <span>{active ? `${active.make.toUpperCase()} ${active.model.toUpperCase()}` : 'BUILT AROUND YOUR CAR'}</span>
+                            <div className="cv-overview-intro">
+                                <div>
+                                    <p className="cv-culture-kicker">YOUR CARVERSE SPACE</p>
+                                    <h1>Welcome back, {user.name.split(' ')[0]}.</h1>
+                                    <p>Everything for your car, in one place.</p>
+                                </div>
+                                <Link href="/events/mine" className="cv-overview-text-link">Manage my events <ArrowRight size={16} /></Link>
+                            </div>
+                            <div className="cv-overview-feature-grid">
+                                <section className="cv-overview-feature">
+                                    <span className="cv-overview-feature-label"><span /> MADE FOR THE ROAD AHEAD</span>
+                                    <h2>Care for your car.<br /><em>Enjoy the drive.</em></h2>
+                                    <p>Find the right parts, connect with specialists and keep your vehicle details close.</p>
+                                    <div className="cv-overview-feature-actions">
+                                        <Link href="/app/providers" className="cv-button">Find a specialist <ArrowRight size={16} /></Link>
+                                        <Link href="/app/parts" className="cv-overview-ghost-link">Explore parts <ArrowRight size={16} /></Link>
                                     </div>
                                 </section>
-                                <Card className="cv-next-service">
-                                    <span className="cv-icon-bg">
-                                        <Car size={22} />
-                                    </span>
-                                    <h2>Your garage</h2>
-                                    <h3>{active ? `${active.make} ${active.model}` : 'Make it yours'}</h3>
-                                    <p>Keep your vehicle details ready when you browse parts and specialists.</p>
-                                    <Link className="cv-link" href="/app/garage">
-                                        Manage vehicles <ArrowRight size={15} />
+                                <aside className="cv-overview-vehicle" aria-label="Your active vehicle">
+                                    <div className="cv-overview-vehicle-top">
+                                        <span className="cv-overview-vehicle-icon"><Car size={22} /></span>
+                                        <span>YOUR GARAGE</span>
+                                    </div>
+                                    {active ? (
+                                        <>
+                                            <h2>{active.make} {active.model}</h2>
+                                            <p>{active.year}{active.variant ? ` · ${active.variant}` : ''}</p>
+                                            <div className="cv-overview-vehicle-stats">
+                                                <span><Gauge size={16} /> {active.mileage.toLocaleString()} km</span>
+                                            </div>
+                                            {p.vehicles.length > 1 && (
+                                                <select aria-label="Active vehicle" value={active.id} onChange={(e) => router.post(`/vehicles/${e.target.value}/active`, {}, { preserveScroll: true })}>
+                                                    {vehicleOptions.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
+                                                </select>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <h2>Add your first car</h2>
+                                            <p>Save your vehicle details to make browsing more useful.</p>
+                                        </>
+                                    )}
+                                    <Link href="/profile#garage" className="cv-overview-vehicle-link">
+                                        {active ? 'Manage my garage' : 'Add a vehicle'} <ArrowRight size={16} />
                                     </Link>
-                                </Card>
+                                </aside>
                             </div>
-                            <div className="cv-section-heading">
-                                <h2>What does your car need?</h2>
-                                <span>TAKE THE NEXT STEP</span>
+                            <div className="cv-overview-section-title">
+                                <div><p className="cv-culture-kicker">EXPLORE CARVERSE</p><h2>What would you like to do?</h2></div>
                             </div>
-                            <div className="cv-two-grid">
-                                {[
-                                    [
-                                        ShoppingBag,
-                                        'Find the right parts',
-                                        'Search parts and ask a supplier to confirm fitment.',
-                                        'Explore parts',
-                                        'parts',
-                                    ],
-                                    [
-                                        Wrench,
-                                        'Find a trusted specialist',
-                                        'Find a garage with the expertise your car needs.',
-                                        'Find a garage',
-                                        'providers',
-                                    ],
-                                ].map(([Icon, t, d, l, url]) => {
-                                    const I = Icon as typeof Car;
-                                    return (
-                                        <Link href={`/app/${url}`} className="cv-quick-card" key={String(t)}>
-                                            <span className="cv-icon-bg">
-                                                <I size={22} />
-                                            </span>
-                                            <h3>{String(t)}</h3>
-                                            <p>{String(d)}</p>
-                                            <span className="cv-link">
-                                                {String(l)} <ArrowRight size={15} />
-                                            </span>
-                                        </Link>
-                                    );
-                                })}
+                            <div className="cv-overview-destinations">
+                                <Link href="/app/parts" className="cv-overview-destination">
+                                    <ShoppingBag size={23} /><span>01 / PARTS</span><h3>Find the right part</h3><p>Search available parts and check what fits your car.</p><ArrowRight className="cv-overview-destination-arrow" size={18} />
+                                </Link>
+                                <Link href="/app/providers" className="cv-overview-destination">
+                                    <Wrench size={23} /><span>02 / SPECIALISTS</span><h3>Find a specialist</h3><p>Browse trusted local garages and skilled professionals.</p><ArrowRight className="cv-overview-destination-arrow" size={18} />
+                                </Link>
+                                <Link href="/events" className="cv-overview-destination">
+                                    <CalendarDays size={23} /><span>03 / COMMUNITY</span><h3>Explore events</h3><p>See upcoming meets, shows and workshops near you.</p><ArrowRight className="cv-overview-destination-arrow" size={18} />
+                                </Link>
                             </div>
-                            <div className="cv-trust-note">
-                                <ShieldCheck size={19} />
-                                <p>
-                                    <strong>Clarity builds trust.</strong> Provider identity checks and part fitment are shown separately, so you know
-                                    exactly what has been checked.
-                                </p>
-                            </div>
-                        </>
-                    )}
-                    {p.section === 'garage' && (
-                        <>
-                            <div className="cv-two-grid">
-                                {p.vehicles.map((v) => (
-                                    <Card key={v.id}>
-                                        <div className="cv-row">
-                                            <Car size={30} />
-                                            {active?.id === v.id && <Badge tone="green">Active vehicle</Badge>}
-                                        </div>
-                                        <h2>
-                                            {v.make} {v.model}
-                                        </h2>
-                                        {v.photo_url && <img className="cv-uploaded-photo" src={v.photo_url} alt={`${v.make} ${v.model}`} />}
-                                        <p>
-                                            {v.year} · {v.variant} · {v.registration}
-                                        </p>
-                                        <div className="cv-vehicle-facts">
-                                            <span>
-                                                <Gauge size={16} />
-                                                {v.mileage.toLocaleString()} km
-                                            </span>
-                                            <span>
-                                                <Fuel size={16} />
-                                                {v.fuel_type}
-                                            </span>
-                                            <span>{v.transmission}</span>
-                                        </div>
-                                        <small>
-                                            Odometer recorded {date(v.mileage_date)}.{' '}
-                                            {new Date(v.mileage_date) < new Date(Date.now() - 30 * 86400000)
-                                                ? 'Please update your mileage; this reading is over 30 days old.'
-                                                : ''}
-                                        </small>
-                                        <Details title="Edit vehicle / update mileage">
-                                            <ActionForm action={`/vehicles/${v.id}`} method="PUT" wide>
-                                                <VehicleFields vehicle={v} />
-                                            </ActionForm>
-                                        </Details>
-                                        <ActionForm action={`/vehicles/${v.id}/active`} label="Set active vehicle" />
-                                    </Card>
-                                ))}
-                            </div>
-                            <Card title="Add a vehicle">
-                                <p>Imported frame and chassis numbers are welcome. A 17-character VIN is not required.</p>
-                                <ActionForm action="/vehicles" label="Add to my garage" wide>
-                                    <VehicleFields />
-                                </ActionForm>
-                            </Card>
                         </>
                     )}
                     {p.section === 'parts' && (
@@ -462,6 +347,7 @@ export default function Workspace(p: WorkspaceProps) {
                             ))}
                         </div>
                     )}
+                    {p.section === 'events' && p.events && <EventsWorkspace data={p.events} />}
                     {p.section === 'community' && (
                         <>
                             <div className="cv-two-grid">
@@ -619,50 +505,18 @@ export default function Workspace(p: WorkspaceProps) {
                                 </>
                             )}
                             <Card title="Apply as a garage, mechanic or supplier">
-                                <ActionForm action="/providers/apply" label="Submit application" wide>
-                                    <Field
-                                        name="logo"
-                                        label="Garage / business logo (optional, PNG, JPEG or WebP, up to 2 MB)"
-                                        type="file"
-                                        required={false}
-                                    />
-                                    <Field name="photo" label="Provider photo (optional, JPEG / PNG, up to 5 MB)" type="file" required={false} />
-                                    <Field name="name" label="Garage, business or professional name" />
-                                    <Field
-                                        name="kind"
-                                        label="Provider type"
-                                        options={[
-                                            { value: 'garage', label: 'Garage' },
-                                            { value: 'mechanic', label: 'Skilled mechanic' },
-                                            { value: 'supplier', label: 'Parts supplier' },
-                                        ]}
-                                    />
-                                    <Field name="location" label="Location" />
-                                    <Field name="phone" label="Kenyan phone number" type="tel" />
-                                    <Field name="description" label="About your garage or services" type="textarea" />
-                                    <Field
-                                        name="years_experience"
-                                        label="Years of experience (self-reported, optional)"
-                                        type="number"
-                                        min={0}
-                                        max={80}
-                                        required={false}
-                                    />
-                                    <Field
-                                        name="qualifications"
-                                        label="Qualifications / training (private, optional)"
-                                        type="textarea"
-                                        required={false}
-                                    />
-                                    <Field name="specialties[]" label="Supported make (optional)" required={false} />
-                                    <Field name="specialties[]" label="Specialist service (optional)" required={false} />
-                                    <Field name="opening_hours" label="Opening hours" />
-                                    <Field
-                                        name="evidence"
-                                        label="Identity, business or trade qualification evidence (private, up to 5 MB)"
-                                        type="file"
-                                    />
-                                </ActionForm>
+                                <p>Choose the right application for your work. Your details are reviewed before any public listing appears.</p>
+                                <div className="cv-provider-application-links">
+                                    <Link href="/app/provider/apply/supplier" className="cv-button">
+                                        Become a Parts Supplier
+                                    </Link>
+                                    <Link href="/app/provider/apply/garage" className="cv-button">
+                                        List your Garage
+                                    </Link>
+                                    <Link href="/app/provider/apply/mechanic" className="cv-button">
+                                        List as specialist
+                                    </Link>
+                                </div>
                             </Card>
                         </>
                     )}
@@ -753,7 +607,7 @@ export default function Workspace(p: WorkspaceProps) {
                                                                         name="role"
                                                                         label="Access role"
                                                                         value={u.role}
-                                                                        options={options(['owner', 'moderator', 'admin'])}
+                                                                        options={options(['enthusiast', 'seller', 'admin'])}
                                                                     />
                                                                 </ActionForm>
                                                             </td>
@@ -973,12 +827,14 @@ export default function Workspace(p: WorkspaceProps) {
                         </>
                     )}
                     <CatalogAttribution />
-                    <footer className="cv-footer">
-                        <span>
-                            CARVERSE KE <i /> Built around your car.
-                        </span>
-                        <span>Nairobi pilot · Vehicle directory & parts</span>
-                    </footer>
+                    {!enthusiastShell && (
+                        <footer className="cv-footer">
+                            <span>
+                                CARVERSE KE <i /> Built around your car.
+                            </span>
+                            <span>Nairobi pilot · Vehicle directory & parts</span>
+                        </footer>
+                    )}
                 </main>
             </div>
         </div>

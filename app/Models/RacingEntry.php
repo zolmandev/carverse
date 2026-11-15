@@ -12,7 +12,7 @@ class RacingEntry extends Model
 
     protected function casts(): array
     {
-        return ['race_date' => 'date:Y-m-d', 'reviewed_at' => 'datetime'];
+        return ['is_demo' => 'boolean', 'race_date' => 'date:Y-m-d', 'reviewed_at' => 'datetime'];
     }
 
     public function reviewer()

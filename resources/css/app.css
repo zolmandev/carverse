@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './carverse-theme.css';
 
 @plugin 'tailwindcss-animate';
 

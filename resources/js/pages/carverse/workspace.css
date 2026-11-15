@@ -1980,12 +1980,12 @@
 .cv-race-preview-list {
     list-style: none;
     padding: 0;
-    margin: 12px 0;
+    margin: 8px 0;
 }
 .cv-race-preview-list li {
     display: flex;
     gap: 9px;
-    padding: 17px 0;
+    padding: 11px 0;
     border-bottom: 1px solid var(--cv-border);
     align-items: start;
 }
@@ -2007,7 +2007,7 @@
 .cv-race-preview-list p {
     font-size: 11px;
     color: var(--cv-muted);
-    margin: 3px 0;
+    margin: 2px 0;
 }
 .cv-race-preview-list small {
     font-size: 9px;

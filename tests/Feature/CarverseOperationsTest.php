@@ -33,7 +33,7 @@ class CarverseOperationsTest extends TestCase
     {
         config(['services.hashback.key' => 'test-key']);
         Http::fake(['www.hashback.co.ke/*' => Http::response(['success' => true], 200)]);
-        $this->post('/register', ['name' => 'New Owner', 'email' => 'new@example.test', 'phone' => '0712345678', 'password' => 'SecurePassword123!', 'password_confirmation' => 'SecurePassword123!'])->assertRedirect('/verify-phone');
+        $this->post('/register', ['name' => 'New Owner', 'email' => 'new@example.test', 'phone' => '0712345678', 'password' => 'SecurePassword123!', 'password_confirmation' => 'SecurePassword123!'])->assertRedirect('/');
         $u = User::where('email', 'new@example.test')->firstOrFail();
         $u->forceFill(['phone_verified_at' => now()])->save();
         $this->actingAs($u);

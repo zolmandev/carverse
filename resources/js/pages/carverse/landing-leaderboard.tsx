@@ -80,7 +80,7 @@ export default function LandingLeaderboard({ racing }: { racing: LandingRacing }
                     ))}
                 </ol>
             ) : null}
-            <p className="cv-racing-disclaimer">Top 10 runs for the selected event and distance. Tied times share a rank.</p>
+            <p className="cv-racing-disclaimer">Top 5 best times from Dragy for the selected event and distance. Tied times share a rank.</p>
         </aside>
     );
 }

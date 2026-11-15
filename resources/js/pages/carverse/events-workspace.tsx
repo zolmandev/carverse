@@ -60,7 +60,6 @@ export default function EventsWorkspace({ data: d, searchAction = '/app/events' 
                             <Card key={event.id} className="cv-event-list-card">
                                 {event.poster_url && <img className="cv-event-poster" src={event.poster_url} alt={`${event.title} poster`} />}
                                 <div className="cv-row">
-                                    <Badge tone="green">Application approved</Badge>
                                     <Badge>{eventCategories.find((c) => c.value === event.category)?.label ?? event.category}</Badge>
                                 </div>
                                 <h2>{event.title}</h2>

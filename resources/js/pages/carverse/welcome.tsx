@@ -111,7 +111,6 @@ export default function Welcome({
                                             <MapPin size={13} />
                                             {event.venue}, {event.location}
                                         </p>
-                                        <small>{dateTime(event.starts_at)} EAT</small>
                                     </div>
                                 </li>
                             ))}

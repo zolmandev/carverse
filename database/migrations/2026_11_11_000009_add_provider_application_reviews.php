@@ -12,7 +12,7 @@ return new class extends Migration
             $t->unsignedTinyInteger('years_experience')->nullable();
             $t->text('qualifications')->nullable();
             $t->text('review_note')->nullable();
-            $t->foreignId('reviewed_by')->nullable()->constrained('users')->restrictOnDelete()->index();
+            $t->foreignId('reviewed_by')->nullable()->index()->constrained('users')->restrictOnDelete();
             $t->timestamp('reviewed_at')->nullable();
             $t->index(['status', 'kind']);
         });

@@ -12,14 +12,14 @@ return new class extends Migration
             Schema::table($table, function (Blueprint $t) {
                 $t->string('moderation_status')->default('pending');
                 $t->text('moderation_note')->nullable();
-                $t->foreignId('reviewed_by')->nullable()->constrained('users')->restrictOnDelete()->index();
+                $t->foreignId('reviewed_by')->nullable()->index()->constrained('users')->restrictOnDelete();
                 $t->timestamp('reviewed_at')->nullable();
                 $t->index(['moderation_status', 'created_at']);
             });
         }
         Schema::table('reviews', fn (Blueprint $t) => $t->string('response_status')->default('pending'));
         Schema::table('complaints', function (Blueprint $t) {
-            $t->foreignId('public_approved_by')->nullable()->constrained('users')->restrictOnDelete()->index();
+            $t->foreignId('public_approved_by')->nullable()->index()->constrained('users')->restrictOnDelete();
             $t->timestamp('public_approved_at')->nullable();
         });
     }

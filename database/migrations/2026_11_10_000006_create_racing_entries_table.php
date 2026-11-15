@@ -23,8 +23,8 @@ return new class extends Migration
             $t->string('slip_name');
             $t->string('status')->default('pending')->index();
             $t->text('review_note')->nullable();
-            $t->foreignId('created_by')->constrained('users')->index();
-            $t->foreignId('reviewed_by')->nullable()->constrained('users')->index();
+            $t->foreignId('created_by')->index()->constrained('users');
+            $t->foreignId('reviewed_by')->nullable()->index()->constrained('users');
             $t->timestamp('reviewed_at')->nullable();
             $t->timestamps();
             $t->index(['event', 'distance_metres', 'status', 'elapsed_ms']);

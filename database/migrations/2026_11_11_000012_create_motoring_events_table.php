@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('motoring_events', function (Blueprint $t) {
             $t->id();
-            $t->foreignId('user_id')->constrained()->restrictOnDelete()->index();
+            $t->foreignId('user_id')->index()->constrained()->restrictOnDelete();
             $t->string('title', 180);
             $t->string('category');
             $t->text('description');
@@ -30,7 +30,7 @@ return new class extends Migration
             $t->unsignedInteger('approved_version')->nullable();
             $t->text('review_note')->nullable();
             $t->text('approval_scope')->nullable();
-            $t->foreignId('reviewed_by')->nullable()->constrained('users')->restrictOnDelete()->index();
+            $t->foreignId('reviewed_by')->nullable()->index()->constrained('users')->restrictOnDelete();
             $t->timestamp('reviewed_at')->nullable();
             $t->timestamps();
             $t->index(['status', 'starts_at']);

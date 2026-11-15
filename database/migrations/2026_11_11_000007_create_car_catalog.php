@@ -49,9 +49,9 @@ return new class extends Migration
             $t->index('name');
         });
         Schema::table('communities', function (Blueprint $t) {
-            $t->foreignId('car_brand_id')->nullable()->constrained()->restrictOnDelete()->index();
-            $t->foreignId('car_model_id')->nullable()->constrained()->restrictOnDelete()->index();
-            $t->foreignId('car_trim_id')->nullable()->constrained()->restrictOnDelete()->index();
+            $t->foreignId('car_brand_id')->nullable()->index()->constrained()->restrictOnDelete();
+            $t->foreignId('car_model_id')->nullable()->index()->constrained()->restrictOnDelete();
+            $t->foreignId('car_trim_id')->nullable()->index()->constrained()->restrictOnDelete();
         });
     }
 

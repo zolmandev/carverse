@@ -1,4 +1,5 @@
 import ThemeSwitcher from '@/components/theme-switcher';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CalendarDays, Car, ExternalLink, Flag, LogOut, ShieldCheck, Users } from 'lucide-react';
@@ -99,6 +100,7 @@ export default function SuperUser(p: Props) {
             <Head title={pageTitle} />
             <aside className="cv-sidebar cv-super-sidebar">
                 <Link href="/app/admin" className="cv-logo">
+                    <AppLogoIcon className="cv-logo-mark" aria-hidden="true" />
                     carverse<span className="cv-ke">KE</span>
                 </Link>
                 <span className="cv-pilot">SUPER USER</span>
@@ -347,10 +349,10 @@ export default function SuperUser(p: Props) {
                         <>
                             <Card title="Add a recorded run">
                                 <p>
-                                    Upload GPS evidence and the timing slip for the same run. New entries remain pending until an evidence review is
-                                    recorded.
+                                    Upload GPS evidence and the timing slip for the same run. New entries appear on the leaderboard immediately; admin
+                                    moderation can still reject a disputed run.
                                 </p>
-                                <ActionForm action="/racing" label="Save run for review" wide>
+                                <ActionForm action="/racing" label="Publish run" wide>
                                     <Field name="driver" label="Driver display name" />
                                     <Field name="vehicle" label="Vehicle" />
                                     <Field name="event" label="Event name" />
@@ -400,15 +402,15 @@ export default function SuperUser(p: Props) {
                                     <button className="cv-button">Show results</button>
                                 </form>
                             </Card>
-                            <Card title="Verified leaderboard">
+                            <Card title="Drag racing leaderboard">
                                 <p>
-                                    Only runs with both GPS evidence and timing slips reviewed appear here. Rankings compare the same event and
-                                    distance, by elapsed time; tied times share a rank. Top 100 verified runs are shown.
+                                    Runs are published immediately and ranked by elapsed time within the same event and distance; tied times share a
+                                    rank. Rejected runs are excluded. Top 100 runs are shown.
                                 </p>
                                 {!p.filters.event || !p.filters.distance ? (
                                     <Empty>Select an event and distance to view comparable results.</Empty>
                                 ) : !p.leaderboard.length ? (
-                                    <Empty>No verified runs for this event and distance.</Empty>
+                                    <Empty>No runs for this event and distance.</Empty>
                                 ) : (
                                     <div className="cv-table-scroll">
                                         <table>
@@ -431,7 +433,7 @@ export default function SuperUser(p: Props) {
                                                         </td>
                                                         <td>{(run.elapsed_ms / 1000).toFixed(3)} s</td>
                                                         <td>
-                                                            <Badge tone="green">GPS & slip reviewed</Badge>
+                                                            <Badge tone="green">Published</Badge>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -440,8 +442,7 @@ export default function SuperUser(p: Props) {
                                     </div>
                                 )}
                                 <div className="cv-note">
-                                    Verification records a manual review of submitted evidence. Carverse does not automatically measure GPS runs or
-                                    certify timing equipment.
+                                    Admin moderation is optional. Carverse does not automatically measure GPS runs or certify timing equipment.
                                 </div>
                             </Card>
                             <Card title="Runs & evidence review">

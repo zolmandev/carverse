@@ -10,7 +10,6 @@ export type LandingRacing = {
         driver: string;
         vehicle: string;
         event: string;
-        venue: string;
         race_date: string;
         distance_metres: number;
         elapsed_ms: number;
@@ -72,7 +71,6 @@ export default function LandingLeaderboard({ racing }: { racing: LandingRacing }
                             <div>
                                 <strong>{run.driver}</strong>
                                 <p>{run.vehicle}</p>
-                                <small>{run.venue}</small>
                             </div>
                             <time>
                                 {(run.elapsed_ms / 1000).toFixed(3)}

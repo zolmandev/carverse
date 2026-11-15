@@ -1,3 +1,4 @@
+import AppLogoIcon from '@/components/app-logo-icon';
 import { Link } from '@inertiajs/react';
 import './public-footer.css';
 
@@ -7,6 +8,7 @@ export default function PublicFooter() {
             <div className="cv-global-footer-inner">
                 <div className="cv-global-footer-brand">
                     <Link href="/" className="cv-global-footer-logo">
+                        <AppLogoIcon aria-hidden="true" />
                         carverse <span>KE</span>
                     </Link>
                     <p>Driven by the culture. Built for Kenya.</p>

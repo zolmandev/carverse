@@ -1,4 +1,5 @@
 import ThemeSwitcher from '@/components/theme-switcher';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
@@ -67,6 +68,7 @@ export default function Workspace(p: WorkspaceProps) {
             {!enthusiastShell && (
                 <aside className={`cv-sidebar ${mobile ? 'show' : ''}`}>
                     <Link href="/app" className="cv-logo">
+                        <AppLogoIcon className="cv-logo-mark" aria-hidden="true" />
                         carverse<span className="cv-ke">KE</span>
                     </Link>
                     <span className="cv-pilot">NAIROBI PILOT</span>

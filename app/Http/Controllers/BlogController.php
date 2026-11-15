@@ -18,10 +18,10 @@ class BlogController extends Controller
     {
         $filters = $r->validate(['race_distance' => 'nullable|in:201,402,805', 'race_event' => 'nullable|string|max:160']);
         $distance = (int) ($filters['race_distance'] ?? 402);
-        $demo = ! RacingEntry::where('status', 'verified')->where('is_demo', false)->where('distance_metres', $distance)->exists();
-        $events = RacingEntry::where('status', 'verified')->where('is_demo', $demo)->where('distance_metres', $distance)->distinct()->orderBy('event')->pluck('event');
+        $demo = ! RacingEntry::where('status', '!=', 'rejected')->where('is_demo', false)->where('distance_metres', $distance)->exists();
+        $events = RacingEntry::where('status', '!=', 'rejected')->where('is_demo', $demo)->where('distance_metres', $distance)->distinct()->orderBy('event')->pluck('event');
         $selectedEvent = $filters['race_event'] ?? $events->first();
-        $runs = $selectedEvent ? RacingEntry::where('status', 'verified')->where('is_demo', $demo)->where('event', $selectedEvent)->where('distance_metres', $distance)->orderBy('elapsed_ms')->orderBy('id')->limit(10)->get(['id', 'driver', 'vehicle', 'event', 'venue', 'race_date', 'distance_metres', 'elapsed_ms', 'is_demo']) : [];
+        $runs = $selectedEvent ? RacingEntry::where('status', '!=', 'rejected')->where('is_demo', $demo)->where('event', $selectedEvent)->where('distance_metres', $distance)->orderBy('elapsed_ms')->orderBy('id')->limit(10)->get(['id', 'driver', 'vehicle', 'event', 'venue', 'race_date', 'distance_metres', 'elapsed_ms', 'is_demo']) : [];
 
         return Inertia::render('carverse/welcome', ['featuredCars' => Article::published()->where('is_car_feature', true)->latest('published_at')->latest('id')->limit(6)->get(), 'racing' => ['is_demo' => $demo && count($runs) > 0, 'distance' => $distance, 'event' => $selectedEvent, 'events' => $events, 'runs' => $runs], 'upcomingEvents' => MotoringEvent::published()->where('ends_at', '>=', now())->orderBy('starts_at')->limit(5)->get(['id', 'title', 'category', 'venue', 'location', 'starts_at', 'ends_at', 'description', 'poster_path', 'version']), 'posts' => Article::published()->latest('published_at')->latest('id')->limit(3)->get()]);
     }

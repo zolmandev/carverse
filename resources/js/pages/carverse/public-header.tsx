@@ -1,4 +1,5 @@
 import ThemeSwitcher from '@/components/theme-switcher';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { ArrowRight, BookOpen, CalendarDays, Car, House, Menu, UserRound, X } from 'lucide-react';
@@ -188,6 +189,7 @@ export default function PublicHeader() {
         <>
             <header className="cv-public-header cv-global-header">
                 <Link href="/" className="cv-logo">
+                    <AppLogoIcon className="cv-logo-mark" aria-hidden="true" />
                     carverse<span className="cv-ke">KE</span>
                 </Link>
                 <button

@@ -14,19 +14,19 @@ class PublicApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_leaderboard_returns_only_verified_runs_without_evidence(): void
+    public function test_leaderboard_returns_published_runs_without_evidence(): void
     {
         $user = User::factory()->create();
         $run = $this->racingRun($user, ['elapsed_ms' => 11234]);
-        $this->racingRun($user, ['status' => 'pending', 'elapsed_ms' => 10000]);
+        $pending = $this->racingRun($user, ['status' => 'pending', 'elapsed_ms' => 10000]);
 
         $this->getJson('/api/v1/leaderboard?distance=402&event=Test+Sprint')
             ->assertOk()
-            ->assertJsonPath('data.0.id', $run->id)
+            ->assertJsonPath('data.0.id', $pending->id)
             ->assertJsonPath('data.0.rank', 1)
-            ->assertJsonPath('data.0.elapsed_seconds', 11.234)
+            ->assertJsonPath('data.0.elapsed_seconds', 10)
             ->assertJsonPath('meta.event', 'Test Sprint')
-            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data')
             ->assertJsonMissingPath('data.0.gps_path')
             ->assertJsonMissingPath('data.0.gps_name')
             ->assertJsonMissingPath('data.0.review_note');

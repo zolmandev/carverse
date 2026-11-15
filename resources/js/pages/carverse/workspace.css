@@ -122,6 +122,11 @@
     font-weight: 800;
     color: var(--cv-ink);
 }
+.cv-logo-mark {
+    width: 31px;
+    height: 31px;
+    flex: 0 0 auto;
+}
 .cv-ke {
     font-size: 10px;
     letter-spacing: 0.5px;

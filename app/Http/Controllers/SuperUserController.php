@@ -58,7 +58,7 @@ class SuperUserController extends Controller
             DB::transaction(function () use ($r, $d, &$paths) {
                 $paths[] = $gps = $r->file('gps')->store('racing', 'local');
                 $paths[] = $slip = $r->file('slip')->store('racing', 'local');
-                $entry = RacingEntry::create(collect($d)->except('elapsed_seconds', 'gps', 'slip')->all() + ['elapsed_ms' => (int) round((float) $d['elapsed_seconds'] * 1000), 'gps_path' => $gps, 'gps_name' => basename($r->file('gps')->getClientOriginalName()), 'slip_path' => $slip, 'slip_name' => basename($r->file('slip')->getClientOriginalName()), 'created_by' => $r->user()->id]);
+                $entry = RacingEntry::create(collect($d)->except('elapsed_seconds', 'gps', 'slip')->all() + ['elapsed_ms' => (int) round((float) $d['elapsed_seconds'] * 1000), 'gps_path' => $gps, 'gps_name' => basename($r->file('gps')->getClientOriginalName()), 'slip_path' => $slip, 'slip_name' => basename($r->file('slip')->getClientOriginalName()), 'status' => 'verified', 'created_by' => $r->user()->id]);
                 Workflow::audit('racing.submitted', $entry);
             });
         } catch (\Throwable $e) {
@@ -67,7 +67,7 @@ class SuperUserController extends Controller
             }throw $e;
         }
 
-        return redirect('/app/admin?tab=racing')->with('message', 'Run saved as pending. Review both evidence files before verification.');
+        return redirect('/app/admin?tab=racing')->with('message', 'Run published to the leaderboard. Admin moderation is optional.');
     }
 
     public function reviewRace(Request $r, RacingEntry $entry)

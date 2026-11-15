@@ -24,12 +24,12 @@ class PublicContentController extends Controller
         ]);
         $distance = (int) ($filters['distance'] ?? 402);
         $isDemo = ! RacingEntry::query()
-            ->where('status', 'verified')
+            ->where('status', '!=', 'rejected')
             ->where('is_demo', false)
             ->where('distance_metres', $distance)
             ->exists();
         $events = RacingEntry::query()
-            ->where('status', 'verified')
+            ->where('status', '!=', 'rejected')
             ->where('is_demo', $isDemo)
             ->where('distance_metres', $distance)
             ->distinct()
@@ -40,7 +40,7 @@ class PublicContentController extends Controller
             : $events->first();
         $runs = $selectedEvent
             ? RacingEntry::query()
-                ->where('status', 'verified')
+                ->where('status', '!=', 'rejected')
                 ->where('is_demo', $isDemo)
                 ->where('distance_metres', $distance)
                 ->where('event', $selectedEvent)

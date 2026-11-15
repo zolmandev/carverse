@@ -38,9 +38,9 @@ class LandingActivityTest extends TestCase
         $data = ['created_by' => $admin->id, 'driver' => 'Fictional Driver', 'vehicle' => 'Test coupe', 'event' => 'Test meet A', 'venue' => 'Closed test circuit', 'race_date' => today(), 'distance_metres' => 402, 'elapsed_ms' => 11000, 'gps_path' => 'private/run.gpx', 'gps_name' => 'run.gpx', 'slip_path' => 'private/slip.pdf', 'slip_name' => 'slip.pdf', 'status' => 'verified', 'review_note' => 'Private review'];
         $quarter = RacingEntry::create($data);
         $half = RacingEntry::create(array_replace($data, ['distance_metres' => 805, 'elapsed_ms' => 21000]));
-        RacingEntry::create(array_replace($data, ['status' => 'pending', 'elapsed_ms' => 9000]));
+        $pending = RacingEntry::create(array_replace($data, ['status' => 'pending', 'elapsed_ms' => 9000]));
         RacingEntry::create(array_replace($data, ['event' => 'Test meet B', 'elapsed_ms' => 10000]));
-        $this->get('/')->assertInertia(fn (Assert $p) => $p->where('racing.distance', 402)->where('racing.event', 'Test meet A')->has('racing.runs', 1)->where('racing.runs.0.id', $quarter->id)->missing('racing.runs.0.gps_path')->missing('racing.runs.0.review_note')->missing('racing.runs.0.created_by'));
+        $this->get('/')->assertInertia(fn (Assert $p) => $p->where('racing.distance', 402)->where('racing.event', 'Test meet A')->has('racing.runs', 2)->where('racing.runs.0.id', $pending->id)->missing('racing.runs.0.gps_path')->missing('racing.runs.0.review_note')->missing('racing.runs.0.created_by'));
         $this->get('/?race_distance=805')->assertInertia(fn (Assert $p) => $p->where('racing.distance', 805)->has('racing.runs', 1)->where('racing.runs.0.id', $half->id));
         $this->get('/?race_distance=201')->assertInertia(fn (Assert $p) => $p->has('racing.runs', 0)->has('racing.events', 0));
         $this->get('/?race_distance=123')->assertSessionHasErrors('race_distance');

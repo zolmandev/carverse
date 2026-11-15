@@ -100,15 +100,15 @@ class SuperUserManagementTest extends TestCase
         return RacingEntry::firstOrFail();
     }
 
-    public function test_run_requires_both_files_and_manual_review_before_ranking(): void
+    public function test_run_is_published_immediately_and_can_still_be_moderated(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $this->post('/racing', [])->assertSessionHasErrors(['gps', 'slip']);
         $run = $this->createRun();
-        $this->assertSame('pending', $run->status);
+        $this->assertSame('verified', $run->status);
         $this->assertSame(12345, $run->elapsed_ms);
         $url = '/app/admin?tab=racing&event=Pilot%20Cup&distance=402';
-        $this->get($url)->assertInertia(fn (Assert $p) => $p->has('leaderboard', 0)->missing('entries.data.0.gps_path')->missing('entries.data.0.slip_path'));
+        $this->get($url)->assertInertia(fn (Assert $p) => $p->has('leaderboard', 1)->missing('entries.data.0.gps_path')->missing('entries.data.0.slip_path'));
         $this->post('/racing/'.$run->id.'/review', ['status' => 'verified', 'review_note' => 'Checked documents'])->assertSessionHasErrors(['gps_checked', 'slip_checked', 'matching_run']);
         $this->post('/racing/'.$run->id.'/review', ['status' => 'verified', 'review_note' => 'Both evidence sources match the recorded run.', 'gps_checked' => 1, 'slip_checked' => 1, 'matching_run' => 1])->assertRedirect();
         $this->assertSame('verified', $run->fresh()->status);

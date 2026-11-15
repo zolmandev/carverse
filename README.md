@@ -31,7 +31,7 @@ For installation or deployment: `php artisan migrate`, then `php -d memory_limit
 
 `owner@carverse.test` with the existing demo password opens `/app/admin` directly. Its workspace contains only WhatsApp group link management and Drag Racing Leaderboards. Group links support creation, search, editing and removal.
 
-Racing entries require a driver display name, vehicle, event, venue, date, distance, elapsed time, GPS evidence and timing slip. Private evidence files are downloadable by administrators only. New runs remain pending. Verification requires a recorded manual review of both evidence sources and confirmation that they describe the same run. Only verified entries rank, within the selected event and distance, ordered by elapsed milliseconds; equal times share a rank. Reopening or rejecting a run removes it from the verified leaderboard. No automatic GPS timing or equipment certification is claimed. No fictional racing results are seeded.
+Racing entries require a driver display name, vehicle, event, venue, date, distance, elapsed time, GPS evidence and timing slip. Private evidence files are downloadable by administrators only. New runs publish immediately and rank within the selected event and distance, ordered by elapsed milliseconds; equal times share a rank. Administrators may optionally reject a run, which removes it from public leaderboards. No automatic GPS timing or equipment certification is claimed. No fictional racing results are seeded.
 
 Run `php artisan migrate` after updating to create the racing-entry table. The super-user racing workspace is `/app/admin?tab=racing`.
 

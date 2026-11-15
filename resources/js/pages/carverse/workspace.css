@@ -88,6 +88,55 @@
 .cv-public button {
     cursor: pointer;
 }
+.cv-theme-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 5px 8px 5px 10px;
+    border: 1px solid #dfe3ea;
+    border-radius: 10px;
+    background: #fff;
+    color: #485363;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+.cv-theme-switcher-track {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 28px;
+    height: 16px;
+    padding: 2px;
+    border-radius: 999px;
+    background: #cfd5dd;
+    transition: background .2s ease;
+}
+.cv-theme-switcher-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px #26334d40;
+    transition: transform .2s ease;
+}
+.cv-theme-switcher.is-on {
+    border-color: #c52c2c;
+    color: #b9252b;
+}
+.cv-theme-switcher.is-on .cv-theme-switcher-track {
+    background: #c52c2c;
+}
+.cv-theme-switcher.is-on .cv-theme-switcher-thumb {
+    transform: translateX(12px);
+}
+.dark .cv-theme-switcher {
+    border-color: #39485c;
+    background: #202c3d;
+    color: #dbe3ee;
+}
 .cv-app a,
 .cv-public a {
     text-decoration: none;

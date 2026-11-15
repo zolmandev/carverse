@@ -2,7 +2,7 @@ import ThemeSwitcher from '@/components/theme-switcher';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowRight, BookOpen, CalendarDays, Car, House, Menu, UserRound, X } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarDays, Car, ChevronDown, House, Menu, UserRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PublicFooter from './public-footer';
@@ -42,12 +42,16 @@ export default function PublicHeader() {
         <div className="cv-account-menu">
             <button
                 type="button"
-                className="cv-account-avatar"
+                className="cv-account-trigger"
                 aria-label="Open account menu"
                 aria-expanded={accountOpen}
                 onClick={() => setAccountOpen((open) => !open)}
             >
-                {auth.user?.profile_image_url ? <img src={auth.user.profile_image_url} alt="" /> : auth.user?.name.slice(0, 1)}
+                <span className="cv-account-avatar">
+                    {auth.user?.profile_image_url ? <img src={auth.user.profile_image_url} alt="" /> : auth.user?.name.slice(0, 1)}
+                </span>
+                <span className="cv-account-name">{auth.user?.name}</span>
+                <ChevronDown size={15} aria-hidden="true" />
             </button>
             {accountOpen && (
                 <div className="cv-account-dropdown">

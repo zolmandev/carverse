@@ -386,6 +386,38 @@ class CarverseController extends Controller
         return redirect('/app/provider')->with('message', 'Application submitted. Staff access and public listing start after approval.');
     }
 
+    public function adminStoreProvider(Request $r)
+    {
+        $this->allow($this->policy->admin($r->user()));
+        $d = $r->validate(['name' => 'required|string|max:160', 'kind' => 'required|in:garage,mechanic', 'location' => 'required|string|max:160', 'phone' => ['required', 'regex:/^(?:\+?254|0)[17][0-9]{8}$/'], 'description' => 'required|string|max:2000', 'years_experience' => 'nullable|integer|between:0,80', 'qualifications' => 'nullable|string|max:2000', 'specialties' => 'nullable|array|max:20', 'specialties.*' => 'nullable|string|max:100', 'opening_hours' => 'required|string|max:200', 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120', 'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048', 'evidence' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120']);
+        $paths = [];
+
+        try {
+            DB::transaction(function () use ($r, $d, &$paths) {
+                $attributes = collect($d)->except('evidence', 'photo', 'logo')->all();
+                $attributes['specialties'] = array_values(array_filter($d['specialties'] ?? []));
+                foreach (['photo' => 'photo_path', 'logo' => 'logo_path'] as $field => $column) {
+                    if ($r->hasFile($field)) {
+                        $paths[] = $path = $r->file($field)->store($field === 'logo' ? 'provider-logos' : 'photos', 'local');
+                        $attributes[$column] = $path;
+                    }
+                }
+                $provider = Organization::create($attributes + ['status' => 'approved', 'verification_scope' => 'Profile details and supporting evidence reviewed by Carverse administration.', 'verified_at' => now(), 'reviewed_by' => $r->user()->id, 'reviewed_at' => now()]);
+                $provider->members()->attach($r->user()->id);
+                $paths[] = $evidence = $r->file('evidence')->store('evidence', 'local');
+                Attachment::create(['organization_id' => $provider->id, 'user_id' => $r->user()->id, 'path' => $evidence, 'name' => basename($r->file('evidence')->getClientOriginalName())]);
+                Workflow::audit('provider.admin_created', $provider);
+            });
+        } catch (\Throwable $e) {
+            foreach ($paths as $path) {
+                Storage::disk('local')->delete($path);
+            }
+            throw $e;
+        }
+
+        return back()->with('message', 'Provider listed in the directory.');
+    }
+
     public function providerLogo(Request $r, Organization $organization)
     {
         $viewer = $r->user();

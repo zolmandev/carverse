@@ -2085,26 +2085,36 @@
 .cv-event-banner-date-copy small span { color: #ffadb5; font-size: 9px; letter-spacing: .08em; }
 .cv-event-banner-location {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
-    max-width: min(48%, 260px);
-    padding: 10px 13px;
+    max-width: min(48%, 280px);
+    padding: 8px 14px 8px 9px;
+    border: 1px solid #ffffff45;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #101827e8, #26334dcc);
+    box-shadow: 0 10px 24px #080d1680, inset 0 1px #ffffff1c;
+    backdrop-filter: blur(14px);
 }
 .cv-event-banner-location > svg {
-    flex-shrink: 0;
-    margin-top: 2px;
-    color: #ff8b90;
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    padding: 6px;
+    border: 1px solid #ffadb566;
+    border-radius: 10px;
+    background: #d32f2f33;
+    color: #ff9fa8;
 }
 .cv-event-banner-location span {
     display: grid;
-    gap: 2px;
+    gap: 3px;
     min-width: 0;
 }
 .cv-event-banner-location small {
-    color: #ffffffa8;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
+    color: #ffb3b9;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
 }
 .cv-event-banner-location strong,
 .cv-event-banner-location em {
@@ -2114,11 +2124,12 @@
 }
 .cv-event-banner-location strong {
     color: #fff;
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1.1;
 }
 .cv-event-banner-location em {
-    color: #ffffffa8;
-    font-size: 10px;
+    color: #c8d2df;
+    font-size: 11px;
     font-style: normal;
 }
 .cv-event-banner-content .cv-event-banner-description {

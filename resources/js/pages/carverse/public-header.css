@@ -20,6 +20,7 @@
 }
 .cv-global-header .cv-link {
     color: #485363;
+    text-transform: uppercase;
 }
 .cv-global-header .cv-link:hover {
     color: #b9252b;

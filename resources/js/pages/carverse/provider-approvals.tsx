@@ -82,6 +82,33 @@ export default function ProviderApprovals({ applications: a, filters }: { applic
     if (a.feedback) return <ProviderFeedback data={a.feedback} />;
     return (
         <>
+            <details className="cv-admin-event-edit">
+                <summary>Add garage or specialist</summary>
+                <ActionForm action="/admin/providers" label="Publish provider listing" wide>
+                    <Field
+                        name="kind"
+                        label="Provider type"
+                        value="garage"
+                        options={[
+                            { value: 'garage', label: 'Garage' },
+                            { value: 'mechanic', label: 'Skilled specialist' },
+                        ]}
+                    />
+                    <Field name="name" label="Business or professional name" />
+                    <Field name="logo" label="Logo (optional, PNG/JPEG/WebP, up to 2 MB)" type="file" required={false} />
+                    <Field name="photo" label="Provider photo (optional, JPEG/PNG, up to 5 MB)" type="file" required={false} />
+                    <Field name="location" label="Location" />
+                    <Field name="phone" label="Kenyan phone number" type="tel" />
+                    <Field name="description" label="About the provider" type="textarea" />
+                    <Field name="years_experience" label="Years of experience (optional)" type="number" min={0} max={80} required={false} />
+                    <Field name="qualifications" label="Qualifications / training (optional)" type="textarea" required={false} />
+                    <Field name="specialties[]" label="Specialty or supported make (optional)" required={false} />
+                    <Field name="specialties[]" label="Additional specialty (optional)" required={false} />
+                    <Field name="opening_hours" label="Opening hours" />
+                    <Field name="evidence" label="Supporting evidence (private, PDF/image, up to 5 MB)" type="file" />
+                    <p className="cv-muted">Manual listings are approved and published immediately by the administrator creating them.</p>
+                </ActionForm>
+            </details>
             <nav className="cv-catalog-tabs" aria-label="Provider application status">
                 {['pending', 'approved', 'rejected'].map((s) => (
                     <Link key={s} href={statusUrl(s)} className={a.status === s ? 'active' : ''}>

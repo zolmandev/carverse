@@ -35,6 +35,7 @@ Route::middleware(['auth', 'phone.verified'])->group(function () {
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::get('/profiles/{user}/image', [ProfileController::class, 'image'])->whereNumber('user');
     Route::post('/admin/events', [EventController::class, 'adminStore']);
+    Route::post('/admin/providers', [C::class, 'adminStoreProvider']);
     Route::post('/events/{event}/review', [EventController::class, 'review']);
     Route::put('/admin/events/{event}', [EventController::class, 'adminUpdate']);
     Route::get('/events/{event}/evidence', [EventController::class, 'evidence']);

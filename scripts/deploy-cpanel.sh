@@ -30,8 +30,11 @@ if ! grep -Eq '^APP_KEY=.+$' .env; then
     "$PHP_BIN" artisan key:generate --force --no-interaction
 fi
 
-"$PHP_BIN" artisan optimize:clear
+"$PHP_BIN" artisan config:clear
+"$PHP_BIN" artisan route:clear
+"$PHP_BIN" artisan view:clear
 "$PHP_BIN" artisan migrate --force
+"$PHP_BIN" artisan cache:clear
 "$PHP_BIN" -d memory_limit=512M artisan db:seed --class=CarCatalogSeeder --force
 "$PHP_BIN" artisan storage:link --force
 "$PHP_BIN" artisan config:cache

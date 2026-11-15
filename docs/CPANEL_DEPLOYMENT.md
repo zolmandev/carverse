@@ -65,7 +65,7 @@ HASHBACK_SMS_API_KEY=YOUR_HASHBACK_KEY
 HASHBACK_SMS_BASE_URL=https://www.hashback.co.ke
 ```
 
-Generate `APP_KEY` once on the server after the first upload with `php artisan key:generate`. Never regenerate it on later deployments.
+You may leave `APP_KEY=` empty for the first deployment. The deployment generates it once when empty and preserves it on every later deployment because `.env` is never uploaded or deleted.
 
 Configure mail credentials if password-reset email delivery is required. The default log mailer does not send email.
 

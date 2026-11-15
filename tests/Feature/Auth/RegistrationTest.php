@@ -40,7 +40,7 @@ class RegistrationTest extends TestCase
         $this->assertSame('+254712345678', $user->phone);
         $this->assertNull($user->phone_verified_at);
         $this->assertNotNull($user->phone_verification_code_hash);
-        $response->assertRedirect(route('phone.verification.notice', absolute: false));
+        $response->assertRedirect('/');
 
         Http::assertSent(fn (Request $request) => $request->url() === 'https://www.hashback.co.ke/api/sms/send'
             && $request->hasHeader('Authorization', 'Bearer test-key')

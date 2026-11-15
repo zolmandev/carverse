@@ -1369,7 +1369,26 @@
     overflow-wrap: anywhere;
 }
 .cv-super-sidebar nav a {
+    position: relative;
+    padding: 11px 14px 11px 18px;
     font-size: 11px;
+}
+.cv-super-sidebar nav a.selected {
+    background: transparent;
+    color: var(--cv-ink);
+    box-shadow: none;
+}
+.cv-super-sidebar nav a.selected::before {
+    position: absolute;
+    left: 4px;
+    width: 3px;
+    height: 20px;
+    border-radius: 3px;
+    background: var(--cv-red);
+    content: '';
+}
+.cv-super-sidebar nav a:hover {
+    background: color-mix(in srgb, var(--cv-red) 8%, transparent);
 }
 @media (max-width: 900px) {
     .cv-super-sidebar {

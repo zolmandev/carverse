@@ -104,7 +104,7 @@ export default function SuperUser(p: Props) {
                     carverse<span className="cv-ke">KE</span>
                 </Link>
                 <span className="cv-pilot">SUPER USER</span>
-                <nav>
+                <nav aria-label="Administration menu">
                     <Link href="/app/admin" className={p.tab === 'groups' ? 'selected' : ''}>
                         <Users size={19} />
                         WhatsApp group links

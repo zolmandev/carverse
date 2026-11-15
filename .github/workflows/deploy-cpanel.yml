@@ -1,0 +1,81 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: carverse-cpanel-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Confirm cPanel connection
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USER }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          port: ${{ secrets.CPANEL_PORT }}
+          script: mkdir -p '${{ secrets.CPANEL_APP_PATH }}'
+
+      - name: Upload release files
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -az --delete --exclude-from=.deployignore
+          path: ./
+          remote_path: ${{ secrets.CPANEL_APP_PATH }}/
+          remote_host: ${{ secrets.CPANEL_HOST }}
+          remote_user: ${{ secrets.CPANEL_USER }}
+          remote_key: ${{ secrets.CPANEL_SSH_KEY }}
+          remote_port: ${{ secrets.CPANEL_PORT }}
+
+      - name: Run Laravel deployment tasks
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          PHP_BIN: ${{ secrets.CPANEL_PHP_BIN }}
+          COMPOSER_BIN: ${{ secrets.CPANEL_COMPOSER_BIN }}
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USER }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          port: ${{ secrets.CPANEL_PORT }}
+          envs: PHP_BIN,COMPOSER_BIN
+          script: |
+            cd '${{ secrets.CPANEL_APP_PATH }}'
+            bash scripts/deploy-cpanel.sh

@@ -19,6 +19,6 @@ class EventPolicy
 
     public function evidence(User $user, MotoringEvent $event): bool
     {
-        return $this->update($user, $event) || $this->review($user);
+        return $this->review($user);
     }
 }

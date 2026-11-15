@@ -31,15 +31,10 @@ Route::middleware(['auth', 'phone.verified'])->group(function () {
     Route::redirect('/app/garage', '/profile#garage');
     Route::get('/app/{section?}', [C::class, 'index'])->whereIn('section', ['overview', 'garage', 'parts', 'providers', 'requests', 'passport', 'reminders', 'community', 'events', 'provider', 'admin', 'preferences']);
     Route::get('/app/provider/apply/{kind}', [C::class, 'providerApplicationPage'])->whereIn('kind', ['garage', 'mechanic', 'supplier']);
-    Route::get('/events/submit', [EventController::class, 'submitPage']);
-    Route::get('/events/mine', [EventController::class, 'minePage']);
-    Route::get('/events/{event}/edit', [EventController::class, 'editPage']);
     Route::get('/profile', [ProfileController::class, 'edit']);
     Route::post('/profile', [ProfileController::class, 'update']);
     Route::get('/profiles/{user}/image', [ProfileController::class, 'image'])->whereNumber('user');
-    Route::post('/events', [EventController::class, 'store'])->middleware('throttle:5,10');
-    Route::put('/events/{event}', [EventController::class, 'update']);
-    Route::post('/events/{event}/withdraw', [EventController::class, 'withdraw']);
+    Route::post('/admin/events', [EventController::class, 'adminStore']);
     Route::post('/events/{event}/review', [EventController::class, 'review']);
     Route::put('/admin/events/{event}', [EventController::class, 'adminUpdate']);
     Route::get('/events/{event}/evidence', [EventController::class, 'evidence']);

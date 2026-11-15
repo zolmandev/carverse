@@ -1,4 +1,3 @@
-import { Link } from '@inertiajs/react';
 import { eventCategories, EventsData, localDateTime, MotoringEvent } from './event-types';
 import { Badge, Card, dateTime, Empty, Field, Pager } from './ui';
 export function EventFields({ event, email }: { event?: MotoringEvent; email: string | null }) {
@@ -41,10 +40,6 @@ export default function EventsWorkspace({ data: d, searchAction = '/app/events' 
             <div className="cv-events-listing">
                 <div className="cv-events-listing-heading">
                     <h2>Discover upcoming events</h2>
-                    <div className="cv-provider-application-links">
-                        {d.mine && <Link href="/events/mine" className="cv-link">Manage my events</Link>}
-                        <Link href="/events/submit" className="cv-button">Submit your event →</Link>
-                    </div>
                 </div>
                 <section className="cv-group-list">
                     <Card title="Upcoming approved events">

@@ -168,24 +168,6 @@ export default function Welcome({
                     </section>
                 </aside>
             </div>
-            <section className="cv-provider-join" aria-labelledby="provider-join-title">
-                <div>
-                    <p className="cv-culture-kicker">FOR THE PEOPLE BEHIND THE SCENE</p>
-                    <h2 id="provider-join-title">Bring your work to Carverse.</h2>
-                    <p>Apply to be listed in the specialist directory. Applications are reviewed before they appear publicly.</p>
-                </div>
-                <div className="cv-provider-join-actions">
-                    <Link href="/app/provider/apply/supplier">
-                        Become a Parts Supplier <ArrowRight size={16} />
-                    </Link>
-                    <Link href="/app/provider/apply/garage">
-                        List your Garage <ArrowRight size={16} />
-                    </Link>
-                    <Link href="/app/provider/apply/mechanic">
-                        List as specialist <ArrowRight size={16} />
-                    </Link>
-                </div>
-            </section>
         </div>
     );
 }

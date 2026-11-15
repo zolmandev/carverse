@@ -25,9 +25,6 @@ export type MotoringEvent = {
 };
 export type EventsData = {
     upcoming: Paginated<MotoringEvent>;
-    mine: Paginated<MotoringEvent> | null;
-    canSubmit: boolean;
-    defaultEmail: string | null;
     filters: { event_search?: string; event_category?: string };
 };
 export type EventApplications = { status: string; events: Paginated<MotoringEvent>; counts: Record<string, number | string> };

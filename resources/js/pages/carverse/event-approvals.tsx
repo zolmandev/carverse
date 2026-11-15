@@ -54,6 +54,13 @@ export default function EventApprovals({ applications: a, search }: { applicatio
         '/app/admin?' + new URLSearchParams({ tab: 'events', event_status: status, ...(search ? { q: search } : {}) }).toString();
     return (
         <>
+            <details className="cv-admin-event-edit">
+                <summary>Create event</summary>
+                <ActionForm action="/admin/events" label="Create and publish event">
+                    <EventFields event={undefined} email={null} />
+                    <p className="cv-muted">Events created here are published directly by an administrator.</p>
+                </ActionForm>
+            </details>
             <nav className="cv-catalog-tabs" aria-label="Event approval status">
                 {['pending', 'approved', 'rejected', 'withdrawn'].map((s) => (
                     <Link key={s} href={link(s)} className={a.status === s ? 'active' : ''}>

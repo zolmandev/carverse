@@ -74,11 +74,6 @@ export default function PublicHeader() {
                             Admin dashboard <ArrowRight size={15} />
                         </Link>
                     )}
-                    {!isAdmin && (
-                        <Link href="/events/mine" onClick={() => setAccountOpen(false)}>
-                            Manage my events
-                        </Link>
-                    )}
                     <Link
                         href="/logout"
                         method="post"
@@ -162,7 +157,6 @@ export default function PublicHeader() {
                                                 Admin dashboard <ArrowRight size={15} />
                                             </Link>
                                         )}
-                                        {!isAdmin && <Link href="/events/mine" onClick={closeDrawer}>Manage my events</Link>}
                                         <Link href="/logout" method="post" as="button" onClick={closeDrawer}>
                                             Sign out
                                         </Link>

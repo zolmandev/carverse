@@ -27,6 +27,7 @@ class AdminEventUpdateRequest extends FormRequest
             'ends_at_local' => 'required|date_format:Y-m-d\\TH:i',
             'website_url' => ['nullable', 'url', 'starts_with:https://', 'max:2048'],
             'poster' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'evidence' => [$this->isMethod('POST') ? 'required' : 'nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }
 

@@ -175,7 +175,6 @@ export default function Workspace(p: WorkspaceProps) {
                                     <h1>Welcome back, {user.name.split(' ')[0]}.</h1>
                                     <p>Everything for your car, in one place.</p>
                                 </div>
-                                <Link href="/events/mine" className="cv-overview-text-link">Manage my events <ArrowRight size={16} /></Link>
                             </div>
                             <div className="cv-overview-feature-grid">
                                 <section className="cv-overview-feature">

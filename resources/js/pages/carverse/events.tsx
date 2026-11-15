@@ -11,7 +11,7 @@ export default function Events({ data, flash }: { data: EventsData; flash: { mes
             <PublicHeader />
             <section>
                 <h1 className="cv-public-heading">Motoring events</h1>
-                <p>Explore approved events and submit yours for review.</p>
+                <p>Explore approved events from the Carverse community.</p>
                 {flash.message && (
                     <div className="cv-success" role="status">
                         {flash.message}

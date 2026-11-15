@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Workflow;
-use App\Http\Requests\EventSubmissionRequest;
 use App\Http\Requests\AdminEventUpdateRequest;
 use App\Models\MotoringEvent;
 use App\Policies\EventPolicy;
@@ -26,45 +25,13 @@ class EventController extends Controller
     public function ownerData(Request $r): array
     {
         $d = $r->validate(['event_search' => 'nullable|string|max:160', 'event_category' => 'nullable|in:meetup,car_show,track_day,motorsport,workshop,other']);
-        $user = $r->user();
-
         return ['upcoming' => MotoringEvent::published()->where('ends_at', '>=', now())->when($d['event_category'] ?? null, fn ($q, $category) => $q->where('category', $category))->when($d['event_search'] ?? null, fn ($q, $search) => $q->where(fn ($q) => $q->whereRaw('LOWER(title) LIKE ?', ['%'.mb_strtolower($search).'%'])->orWhereRaw('LOWER(location) LIKE ?', ['%'.mb_strtolower($search).'%'])))->orderBy('starts_at')->paginate(12, ['id', 'title', 'category', 'description', 'organizer_name', 'venue', 'location', 'starts_at', 'ends_at', 'website_url', 'poster_path', 'status', 'version', 'approval_scope'], 'events_page')->withQueryString(),
-            'mine' => $user ? MotoringEvent::where('user_id', $user->id)->latest()->paginate(10, ['*'], 'my_events_page')->withQueryString()->through(fn ($event) => $event->makeVisible(['contact_email', 'contact_phone', 'evidence_name', 'review_note'])) : null, 'canSubmit' => $user && $user->hasVerifiedPhone(), 'defaultEmail' => $user?->email, 'filters' => $d];
+            'filters' => $d];
     }
 
     public function publicIndex(Request $r)
     {
         return Inertia::render('carverse/events', ['data' => $this->ownerData($r), 'flash' => ['message' => session('message')]]);
-    }
-
-    public function submitPage(Request $r)
-    {
-        return Inertia::render('carverse/event-submission', ['email' => $r->user()->email, 'event' => null]);
-    }
-
-    public function minePage(Request $r)
-    {
-        $d = $r->validate(['status' => 'nullable|in:pending,approved,rejected,withdrawn']);
-        $mine = MotoringEvent::where('user_id', $r->user()->id);
-
-        return Inertia::render('carverse/my-events', [
-            'events' => (clone $mine)->when($d['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
-                ->latest()->paginate(9)->withQueryString()
-                ->through(fn ($event) => $event->makeVisible(['evidence_name', 'review_note'])),
-            'counts' => (clone $mine)->selectRaw('status, COUNT(*) AS total')->groupBy('status')->pluck('total', 'status'),
-            'status' => $d['status'] ?? 'all',
-            'flash' => ['message' => session('message')],
-        ]);
-    }
-
-    public function editPage(Request $r, MotoringEvent $event)
-    {
-        abort_unless($this->policy->update($r->user(), $event), 403);
-
-        return Inertia::render('carverse/event-submission', [
-            'email' => $r->user()->email,
-            'event' => $event->makeVisible(['contact_email', 'contact_phone', 'evidence_name', 'review_note']),
-        ]);
     }
 
     public function adminData(Request $r): array
@@ -77,14 +44,45 @@ class EventController extends Controller
         return ['status' => $status, 'events' => $events, 'counts' => MotoringEvent::selectRaw('status, COUNT(*) AS count')->groupBy('status')->pluck('count', 'status')];
     }
 
-    public function store(EventSubmissionRequest $r)
+    public function adminStore(AdminEventUpdateRequest $r)
     {
-        return $this->save($r, new MotoringEvent);
-    }
+        $this->admin($r);
+        $d = $r->validated();
+        $path = null;
 
-    public function update(EventSubmissionRequest $r, MotoringEvent $event)
-    {
-        return $this->save($r, $event);
+        try {
+            DB::transaction(function () use ($r, $d, &$path) {
+                $attributes = collect($d)->except('starts_at_local', 'ends_at_local', 'poster', 'evidence')->all();
+                $attributes['starts_at'] = CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $d['starts_at_local'], 'Africa/Nairobi')->setTimezone('UTC');
+                $attributes['ends_at'] = CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $d['ends_at_local'], 'Africa/Nairobi')->setTimezone('UTC');
+                if ($r->hasFile('poster')) {
+                    $path = $r->file('poster')->store('events', 'local');
+                    $attributes['poster_path'] = $path;
+                }
+                if ($r->hasFile('evidence')) {
+                    $evidencePath = $r->file('evidence')->store('events', 'local');
+                    $attributes['evidence_path'] = $evidencePath;
+                    $attributes['evidence_name'] = basename($r->file('evidence')->getClientOriginalName());
+                }
+                $event = MotoringEvent::create($attributes + [
+                    'user_id' => $r->user()->id,
+                    'status' => 'approved',
+                    'version' => 1,
+                    'approved_version' => 1,
+                    'approval_scope' => 'Created and approved by Carverse administration.',
+                    'reviewed_by' => $r->user()->id,
+                    'reviewed_at' => now(),
+                ]);
+                Workflow::audit('event.admin_created', $event);
+            });
+        } catch (\Throwable $e) {
+            if ($path) {
+                Storage::disk('local')->delete($path);
+            }
+            throw $e;
+        }
+
+        return back()->with('message', 'Event created and published.');
     }
 
     public function adminUpdate(AdminEventUpdateRequest $r, MotoringEvent $event)
@@ -97,7 +95,7 @@ class EventController extends Controller
                 $record = MotoringEvent::lockForUpdate()->findOrFail($event->id);
                 $previous = $record->getAttributes();
                 $newVersion = $record->version + 1;
-                $attributes = collect($d)->except('starts_at_local', 'ends_at_local', 'poster')->all();
+                $attributes = collect($d)->except('starts_at_local', 'ends_at_local', 'poster', 'evidence')->all();
                 $attributes['starts_at'] = CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $d['starts_at_local'], 'Africa/Nairobi')->setTimezone('UTC');
                 $attributes['ends_at'] = CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $d['ends_at_local'], 'Africa/Nairobi')->setTimezone('UTC');
                 if ($r->hasFile('poster')) {
@@ -117,40 +115,6 @@ class EventController extends Controller
         }
 
         return back()->with('message', 'Event details and poster updated.');
-    }
-
-    private function save(EventSubmissionRequest $r, MotoringEvent $event)
-    {
-        $d = $r->validated();
-        $paths = [];
-        try {
-            DB::transaction(function () use ($r, $event, $d, &$paths) {
-                $record = $event->exists ? MotoringEvent::lockForUpdate()->findOrFail($event->id) : $event;
-                if ($record->exists) {
-                    abort_unless($this->policy->update($r->user(), $record), 403);
-                }$previous = $record->exists ? $record->getAttributes() : null;
-                $attributes = collect($d)->except('starts_at_local', 'ends_at_local', 'poster', 'evidence')->all();
-                $attributes['starts_at'] = CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $d['starts_at_local'], 'Africa/Nairobi')->setTimezone('UTC');
-                $attributes['ends_at'] = CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $d['ends_at_local'], 'Africa/Nairobi')->setTimezone('UTC');
-                foreach (['poster' => 'poster_path', 'evidence' => 'evidence_path'] as $field => $column) {
-                    if ($r->hasFile($field)) {
-                        $paths[] = $path = $r->file($field)->store('events', 'local');
-                        $attributes[$column] = $path;
-                        if ($field === 'evidence') {
-                            $attributes['evidence_name'] = basename($r->file($field)->getClientOriginalName());
-                        }
-                    }
-                }
-                $record->fill($attributes + ['user_id' => $r->user()->id, 'status' => 'pending', 'version' => $record->exists ? $record->version + 1 : 1, 'approved_version' => null, 'review_note' => null, 'approval_scope' => null, 'reviewed_by' => null, 'reviewed_at' => null])->save();
-                Workflow::audit($previous ? 'event.resubmitted' : 'event.submitted', $record, ['previous' => $previous]);
-            });
-        } catch (\Throwable $e) {
-            foreach ($paths as $path) {
-                Storage::disk('local')->delete($path);
-            }throw $e;
-        }
-
-        return redirect('/events/mine')->with('message', 'Event submitted for review. It becomes visible to others after approval.');
     }
 
     public function review(Request $r, MotoringEvent $event)
@@ -175,18 +139,6 @@ class EventController extends Controller
         });
 
         return back()->with('message', 'Event decision saved. Only approved submissions are listed.');
-    }
-
-    public function withdraw(Request $r, MotoringEvent $event)
-    {
-        abort_unless($this->policy->update($r->user(), $event), 403);
-        DB::transaction(function () use ($event) {
-            $record = MotoringEvent::lockForUpdate()->findOrFail($event->id);
-            Workflow::audit('event.withdrawn', $record, ['previous' => $record->only('status', 'version', 'approved_version')]);
-            $record->update(['status' => 'withdrawn', 'approved_version' => null]);
-        });
-
-        return back()->with('message', 'Event withdrawn from the listings.');
     }
 
     public function evidence(Request $r, MotoringEvent $event)

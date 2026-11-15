@@ -48,6 +48,16 @@ class CarCatalogController extends Controller
         return response()->json(['options' => $model->trims()->when(! $r->boolean('all'), fn ($q) => $q->where('is_active', true))->orderByDesc('model_year')->orderBy('name')->get(['id', 'name', 'model_year', 'market', 'is_active'])->map(fn ($t) => ['value' => $t->id, 'label' => $t->name.($t->model_year ? ' · '.$t->model_year : '').' · '.$t->market.($t->is_active ? '' : ' (archived)')])]);
     }
 
+    public function publicOptions(Request $r)
+    {
+        $d = $r->validate(['type' => 'required|in:brands,models', 'q' => 'nullable|string|max:80', 'brand_id' => 'nullable|exists:car_brands,id']);
+        $search = $d['q'] ?? null;
+        $query = ($d['type'] === 'brands' ? CarBrand::query()->where('is_active', true) : CarModel::query()->where('is_active', true)->when($d['brand_id'] ?? null, fn ($q, $brand) => $q->where('car_brand_id', $brand)));
+        $options = $query->when($search, fn ($q, $value) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%']))->orderBy('name')->limit(40)->get(['id', 'name'])->map(fn ($item) => ['value' => $item->id, 'label' => $item->name]);
+
+        return response()->json(['options' => $options]);
+    }
+
     private function metaRules(): array
     {
         return ['name' => 'required|string|max:160', 'source' => 'nullable|string|max:255', 'source_url' => 'nullable|url|max:2000', 'is_active' => 'required|boolean'];

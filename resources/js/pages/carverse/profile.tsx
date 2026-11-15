@@ -16,12 +16,124 @@ type ProfileData = {
     created_at: string;
 };
 
+type CatalogOption = { value: number; label: string };
+
+function SearchableCatalogField({
+    name,
+    label,
+    value,
+    type,
+    brandId,
+    disabled = false,
+    onChange,
+    onSelect,
+}: {
+    name: string;
+    label: string;
+    value: string;
+    type: 'brands' | 'models';
+    brandId?: string;
+    disabled?: boolean;
+    onChange: (value: string) => void;
+    onSelect: (option: CatalogOption) => void;
+}) {
+    const [options, setOptions] = useState<CatalogOption[]>([]);
+    const [open, setOpen] = useState(false);
+    useEffect(() => {
+        if (disabled) {
+            setOptions([]);
+            return;
+        }
+        const controller = new AbortController();
+        const params = new URLSearchParams({ type, ...(value ? { q: value } : {}), ...(brandId ? { brand_id: brandId } : {}) });
+        fetch(`/cars/options?${params}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin', signal: controller.signal })
+            .then((response) => (response.ok ? response.json() : Promise.reject(new Error('Unable to load catalog choices.'))))
+            .then((data: { options: CatalogOption[] }) => setOptions(data.options))
+            .catch(() => {
+                if (!controller.signal.aborted) setOptions([]);
+            });
+        return () => controller.abort();
+    }, [brandId, disabled, type, value]);
+    return (
+        <label className="cv-field cv-combobox">
+            <span>{label}</span>
+            <input
+                name={name}
+                value={value}
+                autoComplete="off"
+                disabled={disabled}
+                placeholder={disabled ? 'Select a make first' : `Search ${label.toLowerCase()}`}
+                onFocus={() => setOpen(true)}
+                onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+                onChange={(event) => onChange(event.target.value)}
+            />
+            {open && options.length > 0 && (
+                <div className="cv-combobox-menu" role="listbox">
+                    {options.map((option) => (
+                        <button
+                            key={option.value}
+                            type="button"
+                            role="option"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => {
+                                onSelect(option);
+                                setOpen(false);
+                            }}
+                        >
+                            {option.label}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </label>
+    );
+}
+
 function VehicleFields({ vehicle }: { vehicle?: Vehicle }) {
+    const [make, setMake] = useState(vehicle?.make ?? '');
+    const [model, setModel] = useState(vehicle?.model ?? '');
+    const [brandId, setBrandId] = useState('');
+    useEffect(() => {
+        if (!make) return;
+        const controller = new AbortController();
+        fetch(`/cars/options?type=brands&q=${encodeURIComponent(make)}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin', signal: controller.signal })
+            .then((response) => response.json())
+            .then((data: { options: CatalogOption[] }) => {
+                const match = data.options.find((option) => option.label.toLowerCase() === make.toLowerCase());
+                if (match) setBrandId(String(match.value));
+            })
+            .catch(() => undefined);
+        return () => controller.abort();
+    }, [make]);
     return (
         <>
             <Field name="photo" label="Vehicle photo (optional, JPEG / PNG, up to 5 MB)" type="file" required={false} />
-            <Field name="make" label="Make" value={vehicle?.make} />
-            <Field name="model" label="Model" value={vehicle?.model} />
+            <SearchableCatalogField
+                name="make"
+                label="Make"
+                type="brands"
+                value={make}
+                onChange={(value) => {
+                    setMake(value);
+                    setBrandId('');
+                    setModel('');
+                }}
+                onSelect={(option) => {
+                    setMake(option.label);
+                    setBrandId(String(option.value));
+                    setModel('');
+                }}
+            />
+            <SearchableCatalogField
+                name="model"
+                label="Model"
+                type="models"
+                value={model}
+                brandId={brandId}
+                disabled={!brandId}
+                onChange={setModel}
+                onSelect={(option) => setModel(option.label)}
+            />
             <Field name="year" label="Year" type="number" min={1950} max={new Date().getFullYear() + 1} value={vehicle?.year ?? 2016} />
             <Field name="variant" label="Variant (optional)" required={false} value={vehicle?.variant} />
             <Field name="engine_code" label="Engine code (optional)" required={false} value={vehicle?.engine_code} />

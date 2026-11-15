@@ -49,6 +49,13 @@ class SuperUserController extends Controller
         return Inertia::render('carverse/super-user', ['users' => $users, 'blogPosts' => ($d['tab'] ?? '') === 'blog' ? Article::when(($d['content'] ?? '') === 'features', fn ($q) => $q->where('is_car_feature', true))->latest()->paginate(15, ['*'], 'posts_page')->withQueryString() : null, 'eventApplications' => ($d['tab'] ?? 'groups') === 'events' ? app(EventController::class)->adminData($r) : null, 'applications' => $applications, 'carBrands' => CarBrand::when(($d['tab'] ?? 'groups') !== 'cars', fn ($q) => $q->where('is_active', true))->orderBy('name')->get(), 'catalog' => ($d['tab'] ?? 'groups') === 'cars' ? app(CarCatalogController::class)->page($r) : null, 'tab' => $d['tab'] ?? 'groups', 'groups' => Community::with('brand', 'carModel', 'trim')->when($d['q'] ?? null, fn ($q, $value) => $q->where(fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%'])->orWhereRaw('LOWER(model) LIKE ?', ['%'.mb_strtolower($value).'%'])->orWhereHas('brand', fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%']))->orWhereHas('carModel', fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($value).'%']))))->latest()->paginate(12, ['*'], 'groups_page')->withQueryString(), 'entries' => RacingEntry::with('reviewer:id,name')->when($d['event'] ?? null, fn ($q, $value) => $q->where('event', $value))->when($d['distance'] ?? null, fn ($q, $value) => $q->where('distance_metres', $value))->orderBy('elapsed_ms')->paginate(20, ['*'], 'entries_page')->withQueryString(), 'leaderboard' => ! empty($d['event']) && ! empty($d['distance']) ? RacingEntry::where('status', 'verified')->where('event', $d['event'])->where('distance_metres', $d['distance'])->orderBy('elapsed_ms')->orderBy('id')->limit(100)->get() : [], 'events' => RacingEntry::select('event')->distinct()->orderBy('event')->pluck('event'), 'filters' => $d, 'flash' => ['message' => session('message')]]);
     }
 
+    public function blog(Request $r)
+    {
+        $r->merge(['tab' => 'blog']);
+
+        return $this->index($r);
+    }
+
     public function storeRace(Request $r)
     {
         $this->authorizeAdmin($r);

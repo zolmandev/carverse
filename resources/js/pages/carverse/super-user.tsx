@@ -117,11 +117,11 @@ export default function SuperUser(p: Props) {
                         <ShieldCheck size={19} />
                         Provider approvals
                     </Link>
-                    <Link href="/app/admin?tab=blog&content=features" className={blog && p.filters.content === 'features' ? 'selected' : ''}>
+                    <Link href="/admin/blog?content=features" className={blog && p.filters.content === 'features' ? 'selected' : ''}>
                         <Car size={19} />
                         Car features
                     </Link>
-                    <Link href="/app/admin?tab=blog" className={blog && p.filters.content !== 'features' ? 'selected' : ''}>
+                    <Link href="/admin/blog" className={blog && p.filters.content !== 'features' ? 'selected' : ''}>
                         <CalendarDays size={19} />
                         Blog
                     </Link>

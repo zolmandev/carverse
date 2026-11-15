@@ -98,6 +98,6 @@ class BlogController extends Controller
             Storage::disk('local')->delete($oldPath);
         }
 
-        return redirect('/app/admin?tab=blog'.($a->is_car_feature ? '&content=features' : ''))->with('message', 'Blog post saved.');
+        return redirect('/admin/blog'.($a->is_car_feature ? '?content=features' : ''))->with('message', 'Blog post saved.');
     }
 }

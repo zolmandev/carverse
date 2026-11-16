@@ -17,12 +17,6 @@ export function FeatureCards({ features }: { features: BlogPost[] }) {
                         ) : (
                             <Car size={60} />
                         )}
-                        {(car.feature_engine || car.feature_transmission) && (
-                            <div className="cv-feature-image-specs">
-                                {car.feature_engine && <Badge>{car.feature_engine}</Badge>}
-                                {car.feature_transmission && <Badge>{car.feature_transmission}</Badge>}
-                            </div>
-                        )}
                         <span className="cv-feature-number">{String(index + 1).padStart(2, '0')}</span>
                         <span className="cv-feature-arrow">
                             <ArrowUpRight size={20} />

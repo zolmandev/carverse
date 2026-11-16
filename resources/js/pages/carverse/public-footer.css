@@ -8,7 +8,7 @@
 }
 .cv-global-footer-inner {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
     align-items: center;
     gap: 32px;
     width: min(100%, var(--cv-site-width, 1560px));
@@ -55,13 +55,22 @@
     color: #9d1a1f;
 }
 .cv-global-footer small {
-    justify-self: end;
+    justify-self: start;
 }
 .cv-global-footer-partner {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 7px;
+    display: grid;
+    min-width: 150px;
+    min-height: 64px;
+    place-items: center;
+    padding: 14px 20px;
+    border: 1px solid #ffffff1a;
+    border-radius: 12px;
+    background: #18212b;
+    transition: transform 160ms ease, background 160ms ease;
+}
+.cv-global-footer-partner:hover {
+    transform: translateY(-2px);
+    background: #222e3a;
 }
 .cv-global-footer-partner a {
     display: inline-flex;
@@ -74,8 +83,42 @@
     height: 28px;
     object-fit: contain;
 }
-.cv-global-footer-partner small {
+.cv-global-footer-partners {
+    width: min(100%, var(--cv-site-width, 1560px));
+    margin: 30px auto 0;
+    padding-top: 22px;
+    border-top: 1px solid #dededc;
+}
+.cv-global-footer-partners-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+.cv-global-footer-partners-heading {
+    display: grid;
+    gap: 5px;
+}
+.cv-global-footer-partners-heading span {
+    color: #9d1a1f;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .16em;
+}
+.cv-global-footer-partners-heading small {
     margin: 0;
+}
+.cv-global-footer-partner-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.cv-global-footer-note {
+    width: min(100%, var(--cv-site-width, 1560px));
+    margin: 18px auto 0;
+    color: #737b83;
+    font-size: 10px;
 }
 .dark .cv-global-footer {
     border-color: #303b4c;
@@ -83,9 +126,11 @@
     color: #e5e9f1;
 }
 .dark .cv-global-footer-brand p,
-.dark .cv-global-footer small {
+.dark .cv-global-footer small,
+.dark .cv-global-footer-note {
     color: #a3adbd;
 }
+.dark .cv-global-footer-partners { border-color: #303b4c; }
 @media (max-width: 700px) {
     .cv-global-footer {
         padding: 30px 20px calc(105px + env(safe-area-inset-bottom));
@@ -97,11 +142,11 @@
     .cv-global-footer nav {
         gap: 14px 20px;
     }
-    .cv-global-footer small {
-        justify-self: start;
-        margin: 0;
-    }
-    .cv-global-footer-partner {
+    .cv-global-footer-partners-inner {
         align-items: flex-start;
+        flex-direction: column;
+    }
+    .cv-global-footer-partner-list {
+        justify-content: flex-start;
     }
 }

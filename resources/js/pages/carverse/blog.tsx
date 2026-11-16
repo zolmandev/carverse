@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen, Share2 } from 'lucide-react';
+import { BookOpen, Facebook, Linkedin, MessageCircle, Share2 } from 'lucide-react';
 import './culture.css';
 import PublicHeader from './public-header';
 import { Paginated } from './types';
@@ -134,10 +134,10 @@ export default function Blog({
                             {' · '}{Number(article.views_count ?? 0).toLocaleString()} views
                         </p>
                         <div className="cv-blog-share">
-                            <span><Share2 size={15} /> Share</span>
-                            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">Facebook</a>
-                            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">LinkedIn</a>
-                            <a href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${window.location.href}`)}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                            <span className="cv-blog-share-label"><Share2 size={15} /> Share this story</span>
+                            <a aria-label="Share on Facebook" title="Facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer"><Facebook size={17} /></a>
+                            <a aria-label="Share on LinkedIn" title="LinkedIn" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer"><Linkedin size={17} /></a>
+                            <a aria-label="Share on WhatsApp" title="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${window.location.href}`)}`} target="_blank" rel="noopener noreferrer"><MessageCircle size={17} /></a>
                         </div>
                         {article.excerpt && <p className="cv-blog-intro">{article.excerpt}</p>}
                         {article.featured_image_url && (

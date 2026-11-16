@@ -10,6 +10,7 @@ use App\Policies\WorkspacePolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class BlogController extends Controller
@@ -49,6 +50,11 @@ class BlogController extends Controller
             'article' => $article->fresh(),
             'relatedPosts' => Article::published()->where('id', '!=', $article->id)->where('category', $article->category)->latest('published_at')->limit(4)->get(),
             'popularPosts' => Article::published()->where('id', '!=', $article->id)->orderByDesc('views_count')->latest('published_at')->limit(4)->get(),
+        ])->withViewData([
+            'ogTitle' => $article->title,
+            'ogDescription' => $article->excerpt ?: Str::limit(strip_tags($article->body), 200),
+            'ogUrl' => url('/blog/'.$article->slug),
+            'ogImage' => $article->featured_image_url ? url($article->featured_image_url) : null,
         ]);
     }
 

@@ -21,6 +21,23 @@
             })();
         </script>
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        @if (!empty($ogTitle))
+            <meta property="og:type" content="article">
+            <meta property="og:site_name" content="Carverse KE">
+            <meta property="og:title" content="{{ $ogTitle }}">
+            <meta property="og:description" content="{{ $ogDescription }}">
+            <meta property="og:url" content="{{ $ogUrl }}">
+            @if (!empty($ogImage))
+                <meta property="og:image" content="{{ $ogImage }}">
+                <meta property="og:image:alt" content="{{ $ogTitle }}">
+                <meta name="twitter:card" content="summary_large_image">
+                <meta name="twitter:image" content="{{ $ogImage }}">
+            @else
+                <meta name="twitter:card" content="summary">
+            @endif
+            <meta name="twitter:title" content="{{ $ogTitle }}">
+            <meta name="twitter:description" content="{{ $ogDescription }}">
+        @endif
 
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="apple-touch-icon" href="/favicon.svg">

@@ -57,6 +57,26 @@
 .cv-global-footer small {
     justify-self: end;
 }
+.cv-global-footer-partner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+}
+.cv-global-footer-partner a {
+    display: inline-flex;
+    align-items: center;
+}
+.cv-global-footer-partner img {
+    display: block;
+    width: auto;
+    max-width: 132px;
+    height: 28px;
+    object-fit: contain;
+}
+.cv-global-footer-partner small {
+    margin: 0;
+}
 .dark .cv-global-footer {
     border-color: #303b4c;
     background: #101722;
@@ -80,5 +100,8 @@
     .cv-global-footer small {
         justify-self: start;
         margin: 0;
+    }
+    .cv-global-footer-partner {
+        align-items: flex-start;
     }
 }

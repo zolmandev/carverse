@@ -23,7 +23,13 @@ export default function PublicFooter() {
                     <Link href="/privacy">Privacy</Link>
                     <Link href="/community-guidelines">Guidelines</Link>
                 </nav>
-                <small>Nairobi pilot.</small>
+                <div className="cv-global-footer-partner">
+                    <small>Payments partner</small>
+                    <a href="https://www.hashback.co.ke" target="_blank" rel="noopener noreferrer" aria-label="Hashback">
+                        <img src="https://www.hashback.co.ke/assets/images/logo-on-dark.png" alt="Hashback" loading="lazy" />
+                    </a>
+                    <small>Nairobi pilot.</small>
+                </div>
             </div>
         </footer>
     );

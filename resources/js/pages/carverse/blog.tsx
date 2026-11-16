@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Share2 } from 'lucide-react';
 import './culture.css';
 import PublicHeader from './public-header';
 import { Paginated } from './types';
@@ -29,6 +29,7 @@ export type BlogPost = {
     status: string;
     published_at: string | null;
     reviewed_at: string | null;
+    views_count: number;
 };
 export function BlogCards({ posts }: { posts: BlogPost[] }) {
     return posts.length ? (
@@ -130,7 +131,14 @@ export default function Blog({
                         <p>
                             {article.author} · Published {article.published_at && date(article.published_at)}
                             {article.reviewed_at && ` · Reviewed ${date(article.reviewed_at)}`}
+                            {' · '}{Number(article.views_count ?? 0).toLocaleString()} views
                         </p>
+                        <div className="cv-blog-share">
+                            <span><Share2 size={15} /> Share</span>
+                            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">Facebook</a>
+                            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                            <a href={`https://wa.me/?text=${encodeURIComponent(`${article.title} ${window.location.href}`)}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                        </div>
                         {article.excerpt && <p className="cv-blog-intro">{article.excerpt}</p>}
                         {article.featured_image_url && (
                             <img className="cv-blog-hero-image" src={article.featured_image_url} alt={article.featured_image_alt || ''} />

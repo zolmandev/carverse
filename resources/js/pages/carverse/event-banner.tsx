@@ -50,7 +50,7 @@ export default function EventBanner({ events }: { events: BannerEvent[] }) {
             <div className="cv-event-banner-meta">
                 <div className="cv-event-banner-location">
                     <MapPin size={16} aria-hidden="true" />
-                    <span><small>LOCATION</small><strong>{event.venue}</strong><em>{event.location}</em></span>
+                    <span><strong>{event.venue}</strong><em>{event.location}</em></span>
                 </div>
                 <time className="cv-event-banner-date" dateTime={event.starts_at} aria-label={`Event date and time: ${dateTime(event.starts_at)}, Nairobi time`}>
                     <span className="cv-event-banner-date-day"><CalendarDays size={14} aria-hidden="true" /><strong>{eventDate.day}</strong></span>
